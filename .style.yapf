@@ -1,0 +1,61 @@
+[style]
+# Put closing brackets on a separate line, dedented, if the bracketed
+# expression can't fit in a single line. Applies to all kinds of brackets,
+# including function definitions and calls. For example:
+#
+#   config = {
+#       'key1': 'value1',
+#       'key2': 'value2',
+#   }        # <--- this bracket is dedented and on a separate line
+#
+#   time_series = self.remote_client.query_entity_counters(
+#       entity='dev3246.region1',
+#       key='dns.query_latency_tcp',
+#       transform=Transformation.AVERAGE(window=timedelta(seconds=60)),
+#       start_ts=now()-timedelta(days=3),
+#       end_ts=now(),
+#   )        # <--- this bracket is dedented and on a separate line
+dedent_closing_brackets=True
+
+# Do not split consecutive brackets. Only relevant when
+# dedent_closing_brackets is set. For example:
+#
+#    call_func_that_takes_a_dict(
+#        {
+#            'key1': 'value1',
+#            'key2': 'value2',
+#        }
+#    )
+#
+# would reformat to:
+#
+#    call_func_that_takes_a_dict({
+#        'key1': 'value1',
+#        'key2': 'value2',
+#    })
+coalesce_brackets=True
+
+# Split before a dictionary or set generator (comp_for). For example, note
+# the split before the 'for':
+#
+#   foo = {
+#       variable: 'Hello world, have a nice day!'
+#       for variable in bar if variable != 42
+#   }
+split_before_dict_set_generator=True
+
+# Set to True to split list comprehensions and generators that have
+# non-trivial expressions and multiple clauses before each of these
+# clauses. For example:
+#
+#   result = [
+#       a_long_var + 100 for a_long_var in xrange(1000)
+#       if a_long_var % 10]
+#
+# would reformat to something like:
+#
+#   result = [
+#       a_long_var + 100
+#       for a_long_var in xrange(1000)
+#       if a_long_var % 10]
+split_complex_comprehension=True

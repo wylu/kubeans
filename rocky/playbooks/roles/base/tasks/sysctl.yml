@@ -1,0 +1,6 @@
+---
+- name: setup kernel parameters
+  copy:
+    src: 00-sysctl.conf
+    dest: /etc/sysctl.d
+  notify: reload sysctl

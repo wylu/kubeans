@@ -1,0 +1,36 @@
+---
+- hosts: ntp_server
+  any_errors_fatal: true
+  roles:
+    - role: ntp
+  vars:
+    ntp_servers: []
+    ntp_pools:
+      - 2.centos.pool.ntp.org iburst
+
+- hosts: all
+  any_errors_fatal: true
+  tasks:
+    - name: setup ntp service route
+      vars:
+        ips: |-
+          {%- set ips = [] -%}
+            {%- for host in groups['ntp_server'] -%}
+              {{ ips.append(hostvars[host]['ansible_host']) }}
+            {%- endfor -%}
+          {{- ips|unique -}}
+      lineinfile:
+        path: /etc/hosts
+        regexp: "{{ ntp_service_route }}$"
+        line: "{{ item }} {{ ntp_service_route }}"
+        insertafter: EOF
+      with_items: "{{ ips }}"
+
+- hosts: all:!ntp_server
+  any_errors_fatal: true
+  roles:
+    - role: ntp
+  vars:
+    ntp_servers:
+      - ntp.service.sr iburst
+    ntp_pools: []

@@ -1,0 +1,165 @@
+---
+- name: setup Rocky-AppStream official repository
+  yum_repository:
+    name: appstream
+    description: Rocky Linux $releasever - AppStream
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStream-$releasever
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-AppStream
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-BaseOS official repository
+  yum_repository:
+    name: baseos
+    description: Rocky Linux $releasever - BaseOS
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-$releasever
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-BaseOS
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Debuginfo official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    mirrorlist: "{{ item.mirrorlist }}"
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Debuginfo
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  with_items:
+    - name: baseos-debug
+      description: Rocky Linux $releasever - BaseOS - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-$releasever-debug
+    - name: appstream-debug
+      description: Rocky Linux $releasever - AppStream - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStream-$releasever-debug
+    - name: ha-debug
+      description: Rocky Linux $releasever - High Availability - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=HighAvailability-$releasever-debug
+    - name: powertools-debug
+      description: Rocky Linux $releasever - PowerTools - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=PowerTools-$releasever-debug
+    - name: resilient-storage-debug
+      description: Rocky Linux $releasever - Resilient Storage - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=ResilientStorage-$releasever-debug
+  notify: dnf makecache
+- name: setup Rocky-Devel official repository
+  yum_repository:
+    name: devel
+    description: Rocky Linux $releasever - Devel WARNING! FOR BUILDROOT AND KOJI USE
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Devel-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Devel
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Extras official repository
+  yum_repository:
+    name: extras
+    description: Rocky Linux $releasever - Extras
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=extras-$releasever
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-Extras
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-HighAvailability official repository
+  yum_repository:
+    name: ha
+    description: Rocky Linux $releasever - HighAvailability
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=HighAvailability-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-HighAvailability
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-NFV official repository
+  yum_repository:
+    name: nfv
+    description: Rocky Linux $releasever - NFV
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=NFV-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-NFV
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Plus official repository
+  yum_repository:
+    name: plus
+    description: Rocky Linux $releasever - Plus
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=rockyplus-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Plus
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-PowerTools official repository
+  yum_repository:
+    name: powertools
+    description: Rocky Linux $releasever - PowerTools
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=PowerTools-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-PowerTools
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-RT official repository
+  yum_repository:
+    name: rt
+    description: Rocky Linux $releasever - Realtime
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=RT-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-RT
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-ResilientStorage official repository
+  yum_repository:
+    name: resilient-storage
+    description: Rocky Linux $releasever - ResilientStorage
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=ResilientStorage-$releasever
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-ResilientStorage
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Sources official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    mirrorlist: "{{ item.mirrorlist }}"
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Sources
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  with_items:
+    - name: baseos-source
+      description: Rocky Linux $releasever - BaseOS - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=BaseOS-$releasever-source
+    - name: appstream-source
+      description: Rocky Linux $releasever - AppStream - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=AppStream-$releasever-source
+    - name: ha-source
+      description: Rocky Linux $releasever - High Availability - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=HighAvailability-$releasever-source
+    - name: powertools-source
+      description: Rocky Linux $releasever - PowerTools - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=PowerTools-$releasever-source
+    - name: resilient-storage-source
+      description: Rocky Linux $releasever - Resilient Storage - Source
+      mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=ResilientStorage-$releasever-source
+  notify: dnf makecache

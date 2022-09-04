@@ -1,0 +1,165 @@
+---
+- name: setup Rocky-AppStream official repository
+  yum_repository:
+    name: appstream
+    description: Rocky Linux $releasever - AppStream
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/AppStream/$basearch/os/
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-AppStream
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-BaseOS official repository
+  yum_repository:
+    name: baseos
+    description: Rocky Linux $releasever - BaseOS
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/BaseOS/$basearch/os/
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-BaseOS
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Debuginfo official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Debuginfo
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  with_items:
+    - name: baseos-debug
+      description: Rocky Linux $releasever - BaseOS - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/BaseOS/$basearch/debug/tree/
+    - name: appstream-debug
+      description: Rocky Linux $releasever - AppStream - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/AppStream/$basearch/debug/tree/
+    - name: ha-debug
+      description: Rocky Linux $releasever - High Availability - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/HighAvailability/$basearch/debug/tree/
+    - name: powertools-debug
+      description: Rocky Linux $releasever - PowerTools - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/PowerTools/$basearch/debug/tree/
+    - name: resilient-storage-debug
+      description: Rocky Linux $releasever - Resilient Storage - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/ResilientStorage/$basearch/debug/tree/
+  notify: dnf makecache
+- name: setup Rocky-Devel official repository
+  yum_repository:
+    name: devel
+    description: Rocky Linux $releasever - Devel WARNING! FOR BUILDROOT AND KOJI USE
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/Devel/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Devel
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Extras official repository
+  yum_repository:
+    name: extras
+    description: Rocky Linux $releasever - Extras
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/extras/$basearch/os/
+    gpgcheck: yes
+    enabled: yes
+    file: Rocky-Extras
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-HighAvailability official repository
+  yum_repository:
+    name: ha
+    description: Rocky Linux $releasever - HighAvailability
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/HighAvailability/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-HighAvailability
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-NFV official repository
+  yum_repository:
+    name: nfv
+    description: Rocky Linux $releasever - NFV
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/nfv/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-NFV
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Plus official repository
+  yum_repository:
+    name: plus
+    description: Rocky Linux $releasever - Plus
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/plus/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Plus
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-PowerTools official repository
+  yum_repository:
+    name: powertools
+    description: Rocky Linux $releasever - PowerTools
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/PowerTools/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-PowerTools
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-RT official repository
+  yum_repository:
+    name: rt
+    description: Rocky Linux $releasever - Realtime
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/RT/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-RT
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-ResilientStorage official repository
+  yum_repository:
+    name: resilient-storage
+    description: Rocky Linux $releasever - ResilientStorage
+    baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/ResilientStorage/$basearch/os/
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-ResilientStorage
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  notify: dnf makecache
+- name: setup Rocky-Sources official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: no
+    file: Rocky-Sources
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+    state: present
+  with_items:
+    - name: baseos-source
+      description: Rocky Linux $releasever - BaseOS - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/BaseOS/source/tree/
+    - name: appstream-source
+      description: Rocky Linux $releasever - AppStream - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/AppStream/source/tree/
+    - name: ha-source
+      description: Rocky Linux $releasever - High Availability - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/HighAvailability/source/tree/
+    - name: powertools-source
+      description: Rocky Linux $releasever - PowerTools - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/PowerTools/source/tree/
+    - name: resilient-storage-source
+      description: Rocky Linux $releasever - Resilient Storage - Source
+      baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/ResilientStorage/source/tree/
+  notify: dnf makecache

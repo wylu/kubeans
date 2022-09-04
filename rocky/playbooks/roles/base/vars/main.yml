@@ -1,0 +1,5 @@
+---
+utilities:
+  - openssh
+  - python38
+  # - java-11-openjdk

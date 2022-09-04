@@ -1,0 +1,9 @@
+---
+- name: stat logrotate
+  stat:
+    path: /etc/cron.daily/logrotate
+  register: logrotate_stat
+
+- name: change logrotate time to hourly
+  shell: mv -f /etc/cron.daily/logrotate /etc/cron.hourly/
+  when: logrotate_stat.stat.exists
