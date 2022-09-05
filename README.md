@@ -6,15 +6,15 @@ Deploy kubernetes cluster using ansible
 
 示例：
 
-| Role       |   Host   |       IP       |       OS        |  K8S   |
-| :--------- | :------: | :------------: | :-------------: | :----: |
-| ntp_server | master01 | 10.128.170.231 | Rocky Linux 8.6 | 1.23.6 |
-| k8s_master | master01 | 10.128.170.231 | Rocky Linux 8.6 | 1.23.6 |
-| k8s_master | master02 | 10.128.170.232 | Rocky Linux 8.6 | 1.23.6 |
-| k8s_master | master03 | 10.128.170.233 | Rocky Linux 8.6 | 1.23.6 |
-| k8s_worker | worker01 | 10.128.170.21  | Rocky Linux 8.6 | 1.23.6 |
-| k8s_worker | worker02 | 10.128.170.22  | Rocky Linux 8.6 | 1.23.6 |
-| k8s_worker | worker03 | 10.128.170.23  | Rocky Linux 8.6 | 1.23.6 |
+| Role       |   Host   |       IP       |    K8S |
+| :--------- | :------: | :------------: | -----: |
+| ntp_server | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master | master02 | 10.128.170.232 | 1.23.6 |
+| k8s_master | master03 | 10.128.170.233 | 1.23.6 |
+| k8s_worker | worker01 | 10.128.170.21  | 1.23.6 |
+| k8s_worker | worker02 | 10.128.170.22  | 1.23.6 |
+| k8s_worker | worker03 | 10.128.170.23  | 1.23.6 |
 
 ## Rocky Linux 8.6
 
@@ -78,18 +78,10 @@ systemctl restart NetworkManager
        valid_lft forever preferred_lft forever
 ```
 
-#### 设置主机名
-
-使用 hostnamectl 工具设置主机名
-
-```shell
-hostnamectl set-hostname master01
-```
-
 #### 合并 /home 分区到 / 分区（可选）
 
 - 合并前查看分区
-  
+
   ```shell
   [root@master01 ~]# df -h
   Filesystem           Size  Used Avail Use% Mounted on
@@ -116,7 +108,7 @@ hostnamectl set-hostname master01
   ```
 
 - 删除 /home 所在的 lv
-  
+
   ```shell
   [root@master01 ~]# lvremove /dev/mapper/rl-home
   Do you really want to remove active logical volume rl/home? [y/n]: y
@@ -124,7 +116,7 @@ hostnamectl set-hostname master01
   ```
 
 - 扩展 /root 所在的 lv
-  
+
   ```shell
   [root@master01 ~]# lvextend -l +100%FREE /dev/mapper/rl-root
     Size of logical volume rl/root changed from 70.00 GiB (17920 extents) to 119.10 GiB (30490 extents).
@@ -132,7 +124,7 @@ hostnamectl set-hostname master01
   ```
 
 - 扩展 /root 文件系统
-  
+
   ```shell
   [root@master01 ~]# xfs_growfs /dev/mapper/rl-root
   meta-data=/dev/mapper/rl-root    isize=512    agcount=4, agsize=4587520 blks
@@ -149,7 +141,7 @@ hostnamectl set-hostname master01
   ```
 
 - 合并后查看分区
-  
+
   ```shell
   [root@master01 ~]# df -h
   Filesystem           Size  Used Avail Use% Mounted on
@@ -174,64 +166,6 @@ sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
 reboot
 ```
 
-### 安装 ansible
-
-只需在只执行剧本的节点安装即可，这里在 master01 执行。
-
-#### 更换软件镜像源
-
-参考 [https://mirror.nju.edu.cn/help/rocky](https://mirror.nju.edu.cn/help/rocky) 帮助文档
-
-- 将所有的官方主镜像地址替换为南京大学镜像站地址，如果已经使用了其他镜像站，请相应的替换网址。
-  
-  ```shell
-  sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-      -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
-      -i.bak \
-      /etc/yum.repos.d/Rocky-*.repo
-  ```
-
-- 更新缓存。
-  
-  ```shell
-  dnf makecache
-  ```
-
-- 安装 epel-release
-  
-  ```shell
-  dnf install epel-release -y
-  ```
-
-#### 安装 ansible 2.12
-
-```shell
-dnf install ansible -y
-```
-
-查看 ansible 版本
-
-```shell
-[root@master01 ~]# ansible --version
-ansible [core 2.12.2]
-  config file = /etc/ansible/ansible.cfg
-  configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
-  ansible python module location = /usr/lib/python3.8/site-packages/ansible
-  ansible collection location = /root/.ansible/collections:/usr/share/ansible/collections
-  executable location = /usr/bin/ansible
-  python version = 3.8.12 (default, May 10 2022, 23:46:40) [GCC 8.5.0 20210514 (Red Hat 8.5.0-10)]
-  jinja version = 2.10.3
-  libyaml = True
-```
-
-初始化 ansible 配置
-
-[Ansible Configuration Settings](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)
-
-```shell
-ansible-config init --disabled > /etc/ansible/ansible.cfg
-```
-
 ### 部署步骤
 
 #### 修改 production 清单文件
@@ -242,11 +176,26 @@ ansible-config init --disabled > /etc/ansible/ansible.cfg
 - k8s_worker 至少一个以上
 - k8s_master 和 k8s_worker 节点不能重复
 
-#### 禁用防火墙并设置主机间免密登录
+### 安装设置 ansible
+
+只需在只执行剧本的节点执行即可，这里在 master01 执行。
 
 ```shell
-bash setup_environment.sh
+chmod +x setup.sh && ./setup.sh --password "root password"
 ```
+
+该脚本将会安装 ansible，同时设置节点间免密登录。
+
+#### 基础设置
+
+```shell
+ansible-playbook \
+    --ssh-common-args "-o StrictHostKeyChecking=no" \
+    -i production \
+    playbooks/setup.yml
+```
+
+#### 安装设置 docker
 
 ## CentOS Linux 7.9
 

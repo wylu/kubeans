@@ -29,15 +29,21 @@ INVENTORY=$CURRENT/production
 # ssh 连接密码
 PASSWORD=
 
-function setup_utilities() {
-    echo -e "\n********************* Setup Utilities Begin *********************"
-    dnf install ansible -y
-    dnf install expect -y
-    echo "********************** Setup Utilities End **********************"
+function setup_repo() {
+    echo -e "\n************************ Setup Repo Begin ***********************"
+    # shellcheck disable=SC2016
+    sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+        -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
+        -i.bak \
+        /etc/yum.repos.d/Rocky-*.repo
+    echo "************************* Setup Repo End ************************"
 }
 
 function setup_ansible() {
     echo -e "\n********************** Setup Ansible Begin **********************"
+    dnf install ansible -y
+    ansible --version
+
     # 初始化 ansible 配置
     # Ansible Configuration Settings
     # https://docs.ansible.com/ansible/latest/reference_appendices/config.html
@@ -53,6 +59,8 @@ function setup_ansible() {
 
 function setup_sshkey() {
     echo -e "\n*********************** Setup sshkey Begin **********************"
+    dnf install expect -y
+
     # shellcheck disable=SC2016
     command='
     set timeout 60
@@ -107,14 +115,6 @@ function setup_sshkey() {
     echo "************************ Setup sshkey End ***********************"
 }
 
-function setup() {
-    echo -e "\n************************ Setup ENV Begin ************************"
-    ansible-playbook --ssh-common-args "-o StrictHostKeyChecking=no" \
-        -i "$INVENTORY" \
-        "$CURRENT/playbooks/setup.yml"
-    echo "************************* Setup ENV End *************************"
-}
-
 # DESC: Usage help
 # ARGS: None
 # OUTS: None
@@ -126,9 +126,6 @@ Usage:
       -h|--help                          Displays this help
       -v|--verbose                       Displays verbose output
          --password PASSWORD             SSH password of root user
-
-    Ansible Options:
-      -e|--extra-vars EXTRA_VARS         Set additional variables as key=value
 EOF
 }
 
@@ -184,11 +181,9 @@ function main() {
         set -x
     fi
 
-    setup_utilities
+    setup_repo
     setup_ansible
     setup_sshkey
-
-    setup
 }
 
 # shellcheck disable=SC1091
