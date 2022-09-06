@@ -1,0 +1,10 @@
+---
+# https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#organizing-host-and-group-variables
+docker_version: 20.10.17
+docker_repo: aliyun
+docker_official_repo: https://download.docker.com/linux/centos/docker-ce.repo
+docker_aliyun_repo: http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+docker_registry_mirrors:
+  - https://kn0t2bca.mirror.aliyuncs.com
+
+ntp_service_route: ntp.service.sr

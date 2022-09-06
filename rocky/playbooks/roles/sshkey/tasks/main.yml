@@ -30,6 +30,11 @@
     # https://www.cnblogs.com/didispace/p/12524194.html
     # https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
     # https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html
+
+    # What is "-%}"" for in a jinja template?
+    # https://jinja.palletsprojects.com/en/latest/templates/#whitespace-control
+    # https://picostitch.com/blog/2017/01/21-the-magic-dash-in-jinja-template-block/
+    # http://jinja.quantprogramming.com/
     hosts: |-
       {%- set hosts = [] -%}
       {%- for host in groups['all'] -%}

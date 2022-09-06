@@ -160,12 +160,6 @@ systemctl restart NetworkManager
 sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
 ```
 
-#### 重启系统
-
-```shell
-reboot
-```
-
 ### 部署步骤
 
 #### 修改 production 清单文件
@@ -176,7 +170,7 @@ reboot
 - k8s_worker 至少一个以上
 - k8s_master 和 k8s_worker 节点不能重复
 
-### 安装设置 ansible
+#### 安装设置 ansible
 
 只需在只执行剧本的节点执行即可，这里在 master01 执行。
 
@@ -186,7 +180,7 @@ chmod +x setup.sh && ./setup.sh --password "root password"
 
 该脚本将会安装 ansible，同时设置节点间免密登录。
 
-#### 基础设置
+#### 节点基础设置
 
 ```shell
 ansible-playbook \
@@ -195,7 +189,27 @@ ansible-playbook \
     playbooks/setup.yml
 ```
 
+#### 重启系统
+
+重启系统使配置生效
+
+```shell
+reboot
+```
+
 #### 安装设置 docker
+
+```shell
+ansible-playbook -i production playbooks/install_docker.yml
+```
+
+docker 磁盘挂载
+
+| 变量                 |  类型  |              说明              | 默认                                                                           |
+| :------------------- | :----: | :----------------------------: | :----------------------------------------------------------------------------- |
+| docker_imagefs_dev   | string |    /var/lib/docker 挂载设备    | 无文件系统系统时会初始化 ext4，默认不开启                                      |
+| docker_imagefs_label | string | docker_imagefs_dev文件系统标签 | 默认 docker-imagefs                                                            |
+| docker_imagefs_opts  | string | docker_imagefs_dev文件系统选项 | 默认 -L {{ docker_imagefs_label }}，一般情况不需要设置，除非你知道自己在做什么 |
 
 ## CentOS Linux 7.9
 
