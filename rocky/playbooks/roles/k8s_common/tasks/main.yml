@@ -79,8 +79,13 @@
   tags:
     - k8s-common
 
+# http://www.jinbuguo.com/systemd/systemd.slice.html
+# http://www.jinbuguo.com/systemd/systemd.resource-control.html
+# http://www.jinbuguo.com/systemd/systemd.unit.html
+# http://www.jinbuguo.com/systemd/systemd.service.html
 # https://www.cnblogs.com/sparkdev/p/8448237.html
 # https://www.cnblogs.com/sparkdev/p/9523194.html
+# https://developer.aliyun.com/article/810635
 - name: copy systemd unit
   copy:
     src: system

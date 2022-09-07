@@ -228,6 +228,119 @@ ansible-playbook -i production playbooks/install_k8s.yml
 
 ## CentOS Linux 7.9
 
+## systemd 资源控制
+
+- [systemd.slice](http://www.jinbuguo.com/systemd/systemd.slice.html)
+- [systemd.resource-control](http://www.jinbuguo.com/systemd/systemd.resource-control.html)
+- [systemd.unit](http://www.jinbuguo.com/systemd/systemd.unit.html)
+- [systemd.service](http://www.jinbuguo.com/systemd/systemd.service.html)
+- [从 init 系统说起](https://www.cnblogs.com/sparkdev/p/8448237.html)
+- [Cgroups 与 Systemd](https://www.cnblogs.com/sparkdev/p/9523194.html)
+- [systemd攻略之三：如何利用systemd控制cgroup,实战](https://developer.aliyun.com/article/810635)
+- [Systemd and Cgroup](https://www.sobyte.net/post/2022-09/systemd-and-cgroup/)
+
+通过将 cgroup 层级系统与 systemd unit 树绑定，systemd 可以把资源管理的设置从进程级别移至应用程序级别。
+
+- 创建一个 slice
+
+  ```shell
+  cat >/usr/lib/systemd/system/kubernetes.slice <<"EOF"
+  [Unit]
+  Description=kubernetes slice
+  DefaultDependencies=no
+  Wants=-.slice
+
+  [Slice]
+  EOF
+  ```
+
+- 启动 slice
+
+  ```shell
+  systemctl daemon-reload
+  systemctl start kubernetes.slice
+  ```
+
+- 查看 slice 状态
+
+  ```shell
+  [root@localhost ~]# systemctl status kubernetes.slice
+  ● kubernetes.slice - kubernetes slice
+     Loaded: loaded (/usr/lib/systemd/system/kubernetes.slice; static; vendor preset: disabled)
+     Active: active since Thu 2022-09-08 00:09:12 CST; 7s ago
+
+  Sep 08 00:09:12 localhost systemd[1]: Created slice kubernetes slice.
+  ```
+
+- 创建一个 service
+
+  ```shell
+  cat >/usr/lib/systemd/system/top.service <<"EOF"
+  [Unit]
+  Description=top
+
+  [Service]
+  ExecStart=/usr/bin/top -b
+  Slice=kubernetes.slice
+
+  [Install]
+  WantedBy=multi-user.target
+  EOF
+  ```
+
+- 启动 service
+
+  ```shell
+  systemctl daemon-reload
+  systemctl start top.slice
+  ```
+
+- 查看 service 状态
+
+  ```shell
+  [root@dev235 ansible-k8s]# systemctl status top.service
+  ● top.service - top
+     Loaded: loaded (/usr/lib/systemd/system/top.service; disabled; vendor preset: disabled)
+     Active: active (running) since Thu 2022-09-08 00:27:48 CST; 11s ago
+   Main PID: 20056 (top)
+     CGroup: /kubernetes.slice/top.service
+             └─20056 /usr/bin/top -b
+
+  ...
+  [root@dev235 ansible-k8s]# systemctl status kubernetes.slice
+  ● kubernetes.slice - kubernetes slice
+     Loaded: loaded (/usr/lib/systemd/system/kubernetes.slice; static; vendor preset: disabled)
+     Active: active since Thu 2022-09-08 00:26:09 CST; 3min 11s ago
+     CGroup: /kubernetes.slice
+             └─top.service
+               └─20056 /usr/bin/top -b
+
+  ...
+  ```
+
+- 查看 systemctl status
+
+  ```shell
+  [root@localhost ~]# systemctl status
+  ● localhost
+      State: running
+       Jobs: 0 queued
+     Failed: 0 units
+      Since: Thu 2022-08-18 15:21:06 CST; 2 weeks 6 days ago
+     CGroup: /
+             ├─1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+             ├─kubernetes.slice
+             │ └─top.service
+             │   └─20056 /usr/bin/top -b
+             ├─user.slice
+             │ └─user-0.slice
+             ...
+             └─system.slice
+               ├─rsyslog.service
+               │ └─1745 /usr/sbin/rsyslogd -n
+               ...
+  ```
+
 ## References
 
 [https://github.com/ralish/bash-script-template](https://github.com/ralish/bash-script-template)
