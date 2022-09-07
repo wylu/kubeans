@@ -1,0 +1,9 @@
+---
+- name: dnf makecache
+  shell: dnf makecache
+
+- name: enable kubernetes.slice
+  systemd:
+    state: started
+    enabled: yes
+    name: kubernetes.slice

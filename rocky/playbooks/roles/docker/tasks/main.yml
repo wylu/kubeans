@@ -75,6 +75,7 @@
 
 - name: create docker config
   template:
+    # https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     owner: root

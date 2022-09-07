@@ -1,0 +1,8 @@
+[Unit]
+Description=kubernetes slice
+Wants=-.slice
+
+[Slice]
+
+[Unit]
+DefaultDependencies=no

@@ -183,10 +183,8 @@ chmod +x setup.sh && ./setup.sh --password "root password"
 #### 节点基础设置
 
 ```shell
-ansible-playbook \
-    --ssh-common-args "-o StrictHostKeyChecking=no" \
-    -i production \
-    playbooks/setup.yml
+ansible-playbook -i production playbooks/setup.yml \
+    --ssh-common-args "-o StrictHostKeyChecking=no"
 ```
 
 #### 重启系统
@@ -210,6 +208,23 @@ docker 磁盘挂载
 | docker_imagefs_dev   | string |    /var/lib/docker 挂载设备    | 无文件系统系统时会初始化 ext4，默认不开启                                      |
 | docker_imagefs_label | string | docker_imagefs_dev文件系统标签 | 默认 docker-imagefs                                                            |
 | docker_imagefs_opts  | string | docker_imagefs_dev文件系统选项 | 默认 -L {{ docker_imagefs_label }}，一般情况不需要设置，除非你知道自己在做什么 |
+
+#### 安装 kubernetes
+
+##### 高可用部署
+
+```shell
+ansible-playbook -i production playbooks/install_k8s.yml \
+    -e k8s_ha_master=true \
+    -e k8s_apiserver_vip=10.60.215.191 \
+    -e k8s_apiserver_vip_mask=16
+```
+
+##### 非高可用部署
+
+```shell
+ansible-playbook -i production playbooks/install_k8s.yml
+```
 
 ## CentOS Linux 7.9
 

@@ -7,4 +7,7 @@ docker_aliyun_repo: http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.r
 docker_registry_mirrors:
   - https://kn0t2bca.mirror.aliyuncs.com
 
+kubernetes_version: 1.25.0
+kubernetes_repo: aliyun
+
 ntp_service_route: ntp.service.sr
