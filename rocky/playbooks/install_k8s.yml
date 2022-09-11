@@ -1,3 +1,3 @@
 ---
 - import_playbook: install_k8s_master.yml
-# - import_playbook: install_k8s_worker.yml
+- import_playbook: install_k8s_worker.yml
