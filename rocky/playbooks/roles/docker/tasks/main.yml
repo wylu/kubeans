@@ -49,8 +49,9 @@
   dnf:
     name: docker-ce-{{ docker_version }}
     state: present
+  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_async.html
   # https://stackoverflow.com/questions/41194021/how-can-i-show-progress-for-a-long-running-ansible-task
-  async: 30000
+  async: 3000
   poll: 0
   register: dnf_sleeper
   notify: restart and enable docker
@@ -62,7 +63,8 @@
     jid: "{{ dnf_sleeper.ansible_job_id }}"
   register: job_result
   until: job_result.finished
-  retries: 20
+  retries: 100
+  delay: 10
   tags:
     - docker-ce
 

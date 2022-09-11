@@ -59,7 +59,7 @@
     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     state: present
   notify: dnf makecache
-  when: kubernetes_repo == "official"
+  when: k8s_repo == "official"
   tags:
     - k8s-common
 
@@ -75,7 +75,7 @@
     gpgkey: https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
     state: present
   notify: dnf makecache
-  when: kubernetes_repo == "aliyun"
+  when: k8s_repo == "aliyun"
   tags:
     - k8s-common
 

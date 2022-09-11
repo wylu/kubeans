@@ -31,16 +31,32 @@ PASSWORD=
 
 function setup_repo() {
     echo -e "\n************************ Setup Repo Begin ***********************"
-    # shellcheck disable=SC2016
-    sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-        -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
-        -i.bak \
-        /etc/yum.repos.d/Rocky-*.repo
+    # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
+    if ! compgen -G "/etc/yum.repos.d/Rocky-*.repo.bak" >/dev/null; then
+        # shellcheck disable=SC2016
+        sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+            -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
+            -i.bak \
+            /etc/yum.repos.d/Rocky-*.repo
+
+        dnf makecache
+    fi
     echo "************************* Setup Repo End ************************"
+}
+
+function reset_repo() {
+    echo -e "\n************************ Reset Repo Begin ***********************"
+    # shellcheck disable=SC2016
+    rm -f /etc/yum.repos.d/Rocky-*.repo
+    rename '.bak' '' /etc/yum.repos.d/Rocky-*.bak
+
+    dnf makecache
+    echo "************************* Reset Repo End ************************"
 }
 
 function setup_ansible() {
     echo -e "\n********************** Setup Ansible Begin **********************"
+    dnf install epel-release -y
     dnf install ansible -y
     ansible --version
 
@@ -184,6 +200,7 @@ function main() {
     setup_repo
     setup_ansible
     setup_sshkey
+    reset_repo
 }
 
 # shellcheck disable=SC1091

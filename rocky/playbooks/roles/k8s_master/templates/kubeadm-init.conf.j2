@@ -1,0 +1,88 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+bootstrapTokens:
+  - groups:
+      - system:bootstrappers:kubeadm:default-node-token
+    token: abcdef.0123456789abcdef
+    ttl: 24h0m0s
+    usages:
+      - signing
+      - authentication
+localAPIEndpoint:
+  advertiseAddress: {{ k8s_apiserver_advertise_address }}
+  bindPort: {{ k8s_apiserver_port }}
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  imagePullPolicy: IfNotPresent
+  taints: null
+
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+imageRepository: {{ k8s_image_repository }}
+kubernetesVersion: {{ k8s_version }}
+{% if k8s_ha_enable %}
+controlPlaneEndpoint: {{ k8s_apiserver_vip }}:{{ k8s_apiserver_vport }}
+{% endif %}
+apiServer:
+  timeoutForControlPlane: 4m0s
+controllerManager:
+  extraArgs:
+    "node-cidr-mask-size": "24"
+{% if k8s_external_etcd %}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+{% endif %}
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: {{ k8s_service_cidr }}
+  podSubnet: {{ k8s_pod_cidr }}
+scheduler: {}
+
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+evictionHard:
+  memory.available: "512Mi"
+  imagefs.available: "512Mi"
+  imagefs.inodesFree: "5%"
+  nodefs.available: "5%"
+  nodefs.inodesFree: "5%"
+evictionSoft:
+  memory.available: "1024Mi"
+  imagefs.available: "1Gi"
+  imagefs.inodesFree: "10%"
+  nodefs.available: "10%"
+  nodefs.inodesFree: "10%"
+evictionSoftGracePeriod:
+  memory.available: "30s"
+  imagefs.available: "1m30s"
+  imagefs.inodesFree: "1m30s"
+  nodefs.available: "30s"
+  nodefs.inodesFree: "30s"
+kubeReserved:
+  cpu: "200m"
+  memory: "1Gi"
+systemReserved:
+  cpu: "200m"
+  memory: "1Gi"
+  ephemeral-storage: "10Gi"
+kubeReservedCgroup: "/kubernetes.slice"
+systemReservedCgroup: "/system.slice"
+enforceNodeAllocatable:
+  - pods
+  - kube-reserved
+  - system-reserved
+maxPods: 256
+
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
+nodePortAddresses: {{ k8s_nodeport_ipranges }}

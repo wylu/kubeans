@@ -175,7 +175,7 @@ sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
 只需在只执行剧本的节点执行即可，这里在 master01 执行。
 
 ```shell
-chmod +x setup.sh && ./setup.sh --password "root password"
+chmod +x setup_ansible.sh && ./setup_ansible.sh --password "root password"
 ```
 
 该脚本将会安装 ansible，同时设置节点间免密登录。
@@ -215,9 +215,9 @@ docker 磁盘挂载
 
 ```shell
 ansible-playbook -i production playbooks/install_k8s.yml \
-    -e k8s_ha_master=true \
-    -e k8s_apiserver_vip=10.60.215.191 \
-    -e k8s_apiserver_vip_mask=16
+    -e k8s_ha_enable=true \
+    -e k8s_apiserver_vip=10.128.170.20 \
+    -e k8s_apiserver_vmask=24
 ```
 
 ##### 非高可用部署

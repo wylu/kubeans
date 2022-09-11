@@ -3,3 +3,26 @@
   any_errors_fatal: true
   roles:
     - role: k8s_common
+
+- hosts: k8s_master
+  any_errors_fatal: true
+  roles:
+    - role: k8s_master
+  vars:
+    k8s_preflight: true
+
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  roles:
+    - role: k8s_master
+  vars:
+    k8s_init: true
+    k8s_keepalived_priority: "{{ k8s_keepalived_priority_base + k8s_keepalived_priority_delta }}"
+
+- hosts: k8s_master[1:]
+  any_errors_fatal: true
+  roles:
+    - role: k8s_master
+  vars:
+    k8s_join: true
+    k8s_keepalived_priority: "{{ k8s_keepalived_priority_base - k8s_keepalived_priority_delta }}"
