@@ -1,4 +1,5 @@
 ---
+- import_playbook: setup_partition.yml
 - import_playbook: setup_repo.yml
 - import_playbook: setup_base.yml
 - import_playbook: setup_pypi.yml

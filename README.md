@@ -78,88 +78,6 @@ systemctl restart NetworkManager
        valid_lft forever preferred_lft forever
 ```
 
-#### 合并 /home 分区到 / 分区（可选）
-
-- 合并前查看分区
-
-  ```shell
-  [root@master01 ~]# df -h
-  Filesystem           Size  Used Avail Use% Mounted on
-  devtmpfs             3.8G     0  3.8G   0% /dev
-  tmpfs                3.8G     0  3.8G   0% /dev/shm
-  tmpfs                3.8G  8.5M  3.8G   1% /run
-  tmpfs                3.8G     0  3.8G   0% /sys/fs/cgroup
-  /dev/mapper/rl-root   70G  2.5G   68G   4% /
-  /dev/mapper/rl-home   50G  383M   49G   1% /home
-  /dev/sda1           1014M  188M  827M  19% /boot
-  tmpfs                777M     0  777M   0% /run/user/0
-  ```
-
-- 卸载 /home
-
-  ```shell
-  [root@master01 ~]# umount /home
-  ```
-
-- 取消开机自检 /home
-
-  ```shell
-  [root@master01 ~]# sed -i 's/^\/dev\/mapper\/rl-home/#&/' /etc/fstab
-  ```
-
-- 删除 /home 所在的 lv
-
-  ```shell
-  [root@master01 ~]# lvremove /dev/mapper/rl-home
-  Do you really want to remove active logical volume rl/home? [y/n]: y
-    Logical volume "home" successfully removed.
-  ```
-
-- 扩展 /root 所在的 lv
-
-  ```shell
-  [root@master01 ~]# lvextend -l +100%FREE /dev/mapper/rl-root
-    Size of logical volume rl/root changed from 70.00 GiB (17920 extents) to 119.10 GiB (30490 extents).
-    Logical volume rl/root successfully resized.
-  ```
-
-- 扩展 /root 文件系统
-
-  ```shell
-  [root@master01 ~]# xfs_growfs /dev/mapper/rl-root
-  meta-data=/dev/mapper/rl-root    isize=512    agcount=4, agsize=4587520 blks
-           =                       sectsz=512   attr=2, projid32bit=1
-           =                       crc=1        finobt=1, sparse=1, rmapbt=0
-           =                       reflink=1    bigtime=0 inobtcount=0
-  data     =                       bsize=4096   blocks=18350080, imaxpct=25
-           =                       sunit=0      swidth=0 blks
-  naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
-  log      =internal log           bsize=4096   blocks=8960, version=2
-           =                       sectsz=512   sunit=0 blks, lazy-count=1
-  realtime =none                   extsz=4096   blocks=0, rtextents=0
-  data blocks changed from 18350080 to 31221760
-  ```
-
-- 合并后查看分区
-
-  ```shell
-  [root@master01 ~]# df -h
-  Filesystem           Size  Used Avail Use% Mounted on
-  devtmpfs             3.8G     0  3.8G   0% /dev
-  tmpfs                3.8G     0  3.8G   0% /dev/shm
-  tmpfs                3.8G  8.5M  3.8G   1% /run
-  tmpfs                3.8G     0  3.8G   0% /sys/fs/cgroup
-  /dev/mapper/rl-root  120G  2.8G  117G   3% /
-  /dev/sda1           1014M  188M  827M  19% /boot
-  tmpfs                777M     0  777M   0% /run/user/0
-  ```
-
-#### 关闭 swap
-
-```shell
-sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
-```
-
 ### 部署步骤
 
 #### 修改 production 清单文件
@@ -201,9 +119,9 @@ reboot
 
 docker 磁盘挂载
 
-| 变量                 |  类型  |              说明              | 默认                                                                           |
-| :------------------- | :----: | :----------------------------: | :----------------------------------------------------------------------------- |
-| docker_imagefs_dev   | string |    /var/lib/docker 挂载设备    | 无文件系统系统时会初始化 ext4，默认不开启                                      |
+| 变量                 |  类型  | 说明                           | 默认                                                                           |
+| :------------------- | :----: | :----------------------------- | :----------------------------------------------------------------------------- |
+| docker_imagefs_dev   | string | /var/lib/docker 挂载设备       | 无文件系统系统时会初始化 ext4，默认不开启                                      |
 | docker_imagefs_label | string | docker_imagefs_dev文件系统标签 | 默认 docker-imagefs                                                            |
 | docker_imagefs_opts  | string | docker_imagefs_dev文件系统选项 | 默认 -L {{ docker_imagefs_label }}，一般情况不需要设置，除非你知道自己在做什么 |
 
@@ -219,33 +137,33 @@ ansible-playbook -i production playbooks/install_docker.yml
 
 k8s 高可用
 
-| 变量                |  类型  |         说明          |                                                                              默认 |
-| :------------------ | :----: | :-------------------: | --------------------------------------------------------------------------------: |
-| k8s_ha_enable       |  bool  |    启动高可用模式     |                                      k8s_master 必须 3 个节点，否则报错，默认关闭 |
-| k8s_apiserver_vip   | string |   apiserver的虚拟ip   | 高可用模式必须指定，且和 k8s_apiserver_interface 对应 ip 同网段，默认 192.168.0.1 |
-| k8s_apiserver_vport | string |  apiserver的虚拟端口  |                                                     高可用模式必须指定，默认 5000 |
-| k8s_apiserver_vmask | number | apiserver的虚拟ip掩码 |                                                       高可用模式必须指定，默认 24 |
+| 变量                |  类型  | 说明                  | 默认                                                                              |
+| :------------------ | :----: | :-------------------- | --------------------------------------------------------------------------------- |
+| k8s_ha_enable       |  bool  | 启动高可用模式        | k8s_master 必须 3 个节点，否则报错，默认关闭                                      |
+| k8s_apiserver_vip   | string | apiserver的虚拟ip     | 高可用模式必须指定，且和 k8s_apiserver_interface 对应 ip 同网段，默认 192.168.0.1 |
+| k8s_apiserver_vport | string | apiserver的虚拟端口   | 高可用模式必须指定，默认 5000                                                     |
+| k8s_apiserver_vmask | number | apiserver的虚拟ip掩码 | 高可用模式必须指定，默认 24                                                       |
 
 k8s 网络
 
-| 变量                    |  类型  |           说明            |                                默认 |
-| :---------------------- | :----: | :-----------------------: | ----------------------------------: |
-| k8s_cni_enable          |  bool  | 启用内置 calico 网络插件  |                           默认 true |
+| 变量                    |  类型  | 说明                      | 默认                                |
+| :---------------------- | :----: | :------------------------ | ----------------------------------- |
+| k8s_cni_enable          |  bool  | 启用内置 calico 网络插件  | 默认 true                           |
 | k8s_apiserver_interface | string | apiserver 的监听地址/网口 | 网口必须配有一个 ip，否则行为未定义 |
-| k8s_apiserver_port      | number |   apiserver 的监听端口    |                      默认 6443 端口 |
-| k8s_pod_cidr            | string |       pod cidr 地址       |                默认 "10.244.0.0/16" |
-| k8s_service_cidr        | string |   k8s service cidr 地址   |                 默认 "10.96.0.0/12" |
+| k8s_apiserver_port      | number | apiserver 的监听端口      | 默认 6443 端口                      |
+| k8s_pod_cidr            | string | pod cidr 地址             | 默认 "10.244.0.0/16"                |
+| k8s_service_cidr        | string | k8s service cidr 地址     | 默认 "10.96.0.0/12"                 |
 
 k8s 磁盘挂载
 
-| 变量             |  类型  |            说明             |                                                                         默认 |
-| :--------------- | :----: | :-------------------------: | ---------------------------------------------------------------------------: |
-| k8s_nodefs_dev   | string |  /var/lib/kubelet 挂载设备  |                                    无文件系统系统时会初始化 ext4，默认不开启 |
-| k8s_nodefs_label | string | k8s_nodefs_dev 文件系统标签 |                                                              默认 k8s-nodefs |
+| 变量             |  类型  | 说明                        | 默认                                                                         |
+| :--------------- | :----: | :-------------------------- | ---------------------------------------------------------------------------- |
+| k8s_nodefs_dev   | string | /var/lib/kubelet 挂载设备   | 无文件系统系统时会初始化 ext4，默认不开启                                    |
+| k8s_nodefs_label | string | k8s_nodefs_dev 文件系统标签 | 默认 k8s-nodefs                                                              |
 | k8s_nodefs_opts  | string | k8s_nodefs_dev 文件系统选项 | 默认 "-L {{ k8s_nodefs_label }}"，一般情况不需要设置，除非你知道自己在做什么 |
-| k8s_etcd_dev     | string |   /var/lib/etcd 挂载设备    |                                    无文件系统系统时会初始化 ext4，默认不开启 |
-| k8s_etcd_label   | string |  k8s_etcd_dev 文件系统标签  |                                                                默认 k8s-etcd |
-| k8s_etcd_opts    | string |  k8s_etcd_dev 文件系统选项  |   默认 "-L {{ k8s_etcd_label }}"，一般情况不需要设置，除非你知道自己在做什么 |
+| k8s_etcd_dev     | string | /var/lib/etcd 挂载设备      | 无文件系统系统时会初始化 ext4，默认不开启                                    |
+| k8s_etcd_label   | string | k8s_etcd_dev 文件系统标签   | 默认 k8s-etcd                                                                |
+| k8s_etcd_opts    | string | k8s_etcd_dev 文件系统选项   | 默认 "-L {{ k8s_etcd_label }}"，一般情况不需要设置，除非你知道自己在做什么   |
 
 ##### 高可用部署
 
@@ -407,7 +325,99 @@ Accept-Ranges: bytes
 
 ```
 
-## systemd 资源控制
+## 附录
+
+### 关闭 swap
+
+临时关闭
+
+```shell
+swapoff -a
+```
+
+永久关闭（重启生效）
+
+```shell
+sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
+```
+
+### 合并 /home 分区到 / 分区
+
+- 合并前查看分区
+
+  ```shell
+  [root@master01 ~]# df -h
+  Filesystem           Size  Used Avail Use% Mounted on
+  devtmpfs             3.8G     0  3.8G   0% /dev
+  tmpfs                3.8G     0  3.8G   0% /dev/shm
+  tmpfs                3.8G  8.5M  3.8G   1% /run
+  tmpfs                3.8G     0  3.8G   0% /sys/fs/cgroup
+  /dev/mapper/rl-root   70G  2.5G   68G   4% /
+  /dev/mapper/rl-home   50G  383M   49G   1% /home
+  /dev/sda1           1014M  188M  827M  19% /boot
+  tmpfs                777M     0  777M   0% /run/user/0
+  ```
+
+- 卸载 /home
+
+  ```shell
+  [root@master01 ~]# umount /home
+  ```
+
+- 取消开机自检 /home
+
+  ```shell
+  [root@master01 ~]# sed -i 's/^\/dev\/mapper\/rl-home/#&/' /etc/fstab
+  ```
+
+- 删除 /home 所在的 lv
+
+  ```shell
+  [root@master01 ~]# lvremove /dev/mapper/rl-home
+  Do you really want to remove active logical volume rl/home? [y/n]: y
+    Logical volume "home" successfully removed.
+  ```
+
+- 扩展 /root 所在的 lv
+
+  ```shell
+  [root@master01 ~]# lvextend -l +100%FREE /dev/mapper/rl-root
+    Size of logical volume rl/root changed from 70.00 GiB (17920 extents) to 119.10 GiB (30490 extents).
+    Logical volume rl/root successfully resized.
+  ```
+
+- 扩展 /root 文件系统
+
+  ```shell
+  [root@master01 ~]# xfs_growfs /dev/mapper/rl-root
+  meta-data=/dev/mapper/rl-root    isize=512    agcount=4, agsize=4587520 blks
+           =                       sectsz=512   attr=2, projid32bit=1
+           =                       crc=1        finobt=1, sparse=1, rmapbt=0
+           =                       reflink=1    bigtime=0 inobtcount=0
+  data     =                       bsize=4096   blocks=18350080, imaxpct=25
+           =                       sunit=0      swidth=0 blks
+  naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+  log      =internal log           bsize=4096   blocks=8960, version=2
+           =                       sectsz=512   sunit=0 blks, lazy-count=1
+  realtime =none                   extsz=4096   blocks=0, rtextents=0
+  data blocks changed from 18350080 to 31221760
+  ```
+
+- 合并后查看分区
+
+  ```shell
+  [root@master01 ~]# df -h
+  Filesystem           Size  Used Avail Use% Mounted on
+  devtmpfs             3.8G     0  3.8G   0% /dev
+  tmpfs                3.8G     0  3.8G   0% /dev/shm
+  tmpfs                3.8G  8.5M  3.8G   1% /run
+  tmpfs                3.8G     0  3.8G   0% /sys/fs/cgroup
+  /dev/mapper/rl-root  120G  2.8G  117G   3% /
+  /dev/sda1           1014M  188M  827M  19% /boot
+  tmpfs                777M     0  777M   0% /run/user/0
+  ```
+
+### systemd 资源控制
 
 - [systemd.slice](http://www.jinbuguo.com/systemd/systemd.slice.html)
 - [systemd.resource-control](http://www.jinbuguo.com/systemd/systemd.resource-control.html)
