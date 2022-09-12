@@ -1,0 +1,50 @@
+---
+- name: prepare dashboard directory
+  file:
+    name: /etc/kubernetes/manifests/addon/dashboard
+    state: directory
+  run_once: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
+  tags:
+    - k8s_dashboard
+
+- name: prepare dashboard deployment file
+  template:
+    src: dashboard/{{ item }}.j2
+    dest: /etc/kubernetes/manifests/addon/dashboard/{{ item }}
+  with_items:
+    - "kubernetes-dashboard.yaml"
+    - "admin-user-sa-rbac.yaml"
+  run_once: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
+  tags:
+    - k8s_dashboard
+
+- name: apply dashboard deployment
+  shell: "kubectl apply -f /etc/kubernetes/manifests/addon/dashboard/"
+  run_once: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
+  tags:
+    - k8s_dashboard
+
+- name: waiting dashboard ready
+  shell: "kubectl get pod -n kubernetes-dashboard|tail -n +2|awk '{print $3}'"
+  register: dashboard_status
+  # https://stackoverflow.com/questions/42673045/ansible-when-statements-should-not-include-jinja2-templating-delimiters
+  until: "dashboard_status.stdout_lines|unique|list == ['Running']"
+  retries: 30
+  delay: 20
+  ignore_errors: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
+  tags:
+    - k8s_dashboard
+
+- name: get admin-user access token
+  debug:
+    msg:
+      - "Dashboard listen on https://{{ k8s_apiserver_vip }}:30443/"
+      - "Use following command to get access token of admin-user."
+      - "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')"
+  connection: local
+  tags:
+    - k8s_dashboard

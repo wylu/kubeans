@@ -3,8 +3,8 @@
   shell:
     cmd: kubeadm token create --ttl 5m --print-join-command --certificate-key "$(kubeadm init phase upload-certs --upload-certs --skip-headers --skip-log-headers | tail -n 1)"
   register: k8s_master_join_result
-  delegate_to: "{{ groups.k8s_master.0 }}"
   run_once: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
   tags:
     - k8s_master
 

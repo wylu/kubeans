@@ -4,3 +4,4 @@
 # https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/
 # https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
 - import_playbook: install_k8s_cni.yml
+- import_playbook: install_k8s_addon.yml

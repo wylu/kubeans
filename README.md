@@ -197,9 +197,7 @@ reboot
 
 #### 安装设置 docker
 
-```shell
-ansible-playbook -i production playbooks/install_docker.yml
-```
+##### 可配置变量
 
 docker 磁盘挂载
 
@@ -209,7 +207,45 @@ docker 磁盘挂载
 | docker_imagefs_label | string | docker_imagefs_dev文件系统标签 | 默认 docker-imagefs                                                            |
 | docker_imagefs_opts  | string | docker_imagefs_dev文件系统选项 | 默认 -L {{ docker_imagefs_label }}，一般情况不需要设置，除非你知道自己在做什么 |
 
+##### 部署命令
+
+```shell
+ansible-playbook -i production playbooks/install_docker.yml
+```
+
 #### 安装 kubernetes
+
+##### 可配置变量
+
+k8s 高可用
+
+| 变量                |  类型  |         说明          |                                                                              默认 |
+| :------------------ | :----: | :-------------------: | --------------------------------------------------------------------------------: |
+| k8s_ha_enable       |  bool  |    启动高可用模式     |                                      k8s_master 必须 3 个节点，否则报错，默认关闭 |
+| k8s_apiserver_vip   | string |   apiserver的虚拟ip   | 高可用模式必须指定，且和 k8s_apiserver_interface 对应 ip 同网段，默认 192.168.0.1 |
+| k8s_apiserver_vport | string |  apiserver的虚拟端口  |                                                     高可用模式必须指定，默认 5000 |
+| k8s_apiserver_vmask | number | apiserver的虚拟ip掩码 |                                                       高可用模式必须指定，默认 24 |
+
+k8s 网络
+
+| 变量                    |  类型  |           说明            |                                默认 |
+| :---------------------- | :----: | :-----------------------: | ----------------------------------: |
+| k8s_cni_enable          |  bool  | 启用内置 calico 网络插件  |                           默认 true |
+| k8s_apiserver_interface | string | apiserver 的监听地址/网口 | 网口必须配有一个 ip，否则行为未定义 |
+| k8s_apiserver_port      | number |   apiserver 的监听端口    |                      默认 6443 端口 |
+| k8s_pod_cidr            | string |       pod cidr 地址       |                默认 "10.244.0.0/16" |
+| k8s_service_cidr        | string |   k8s service cidr 地址   |                 默认 "10.96.0.0/12" |
+
+k8s 磁盘挂载
+
+| 变量             |  类型  |            说明             |                                                                         默认 |
+| :--------------- | :----: | :-------------------------: | ---------------------------------------------------------------------------: |
+| k8s_nodefs_dev   | string |  /var/lib/kubelet 挂载设备  |                                    无文件系统系统时会初始化 ext4，默认不开启 |
+| k8s_nodefs_label | string | k8s_nodefs_dev 文件系统标签 |                                                              默认 k8s-nodefs |
+| k8s_nodefs_opts  | string | k8s_nodefs_dev 文件系统选项 | 默认 "-L {{ k8s_nodefs_label }}"，一般情况不需要设置，除非你知道自己在做什么 |
+| k8s_etcd_dev     | string |   /var/lib/etcd 挂载设备    |                                    无文件系统系统时会初始化 ext4，默认不开启 |
+| k8s_etcd_label   | string |  k8s_etcd_dev 文件系统标签  |                                                                默认 k8s-etcd |
+| k8s_etcd_opts    | string |  k8s_etcd_dev 文件系统选项  |   默认 "-L {{ k8s_etcd_label }}"，一般情况不需要设置，除非你知道自己在做什么 |
 
 ##### 高可用部署
 
@@ -227,6 +263,149 @@ ansible-playbook -i production playbooks/install_k8s.yml
 ```
 
 ## CentOS Linux 7.9
+
+## 测试
+
+### 测试域名解析
+
+#### dig 测试
+
+```shell
+➜ dnf/yum install bind-utils -y
+
+➜ dig -t A www.baidu.com @10.96.0.10 +short
+
+www.a.shifen.com.
+182.61.200.6
+182.61.200.7
+```
+
+#### pod 测试
+
+```shell
+➜ kubectl run -it --rm --image=busybox:1.28.3 -- sh
+
+If you don't see a command prompt, try pressing enter.
+/ # cat /etc/resolv.conf
+nameserver 10.96.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+/ # nslookup kubernetes.default
+Server:    10.96.0.10
+Address 1: 10.96.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      kubernetes.default
+Address 1: 10.96.0.1 kubernetes.default.svc.cluster.local
+/ # ping -c 4 www.baidu.com
+PING www.baidu.com (182.61.200.6): 56 data bytes
+64 bytes from 182.61.200.6: seq=0 ttl=52 time=6.860 ms
+64 bytes from 182.61.200.6: seq=1 ttl=52 time=6.592 ms
+64 bytes from 182.61.200.6: seq=2 ttl=52 time=6.488 ms
+64 bytes from 182.61.200.6: seq=3 ttl=52 time=7.288 ms
+
+--- www.baidu.com ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 6.488/6.807/7.288 ms
+```
+
+### 测试应用部署
+
+#### 创建 namespace
+
+```shell
+➜ kubectl create namespace dev
+
+namespace/dev created
+
+➜ kubectl get namespace
+
+NAME              STATUS   AGE
+default           Active   15h
+dev               Active   15s
+kube-node-lease   Active   15h
+kube-public       Active   15h
+kube-system       Active   15h
+```
+
+#### 创建 deployment
+
+```shell
+➜ cat > ~/nginx-deployment.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-pod
+  template:
+    metadata:
+      labels:
+        app: nginx-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+EOF
+
+➜ kubectl apply -f ~/nginx-deployment.yaml
+
+deployment.apps/nginx-deployment created
+
+➜ kubectl get pod -n dev
+
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-7d4578b56c-cndrb   1/1     Running   0          48s
+```
+
+创建 service
+
+```shell
+➜ cat > ~/nginx-service.yaml << EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: dev
+spec:
+  selector:
+    app: nginx-pod
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30001
+EOF
+
+➜ kubectl apply -f ~/nginx-service.yaml
+
+service/nginx-service created
+
+➜ kubectl get svc -n dev
+
+NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+nginx-service   NodePort   10.108.42.72    <none>        80:30001/TCP   17s
+```
+
+测试服务访问
+
+```shell
+➜ curl 10.128.170.20:30001 -I
+
+HTTP/1.1 200 OK
+Server: nginx/1.21.5
+Date: Mon, 12 Sep 2022 05:44:38 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Tue, 28 Dec 2021 15:28:38 GMT
+Connection: keep-alive
+ETag: "61cb2d26-267"
+Accept-Ranges: bytes
+
+```
 
 ## systemd 资源控制
 
