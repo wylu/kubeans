@@ -10,4 +10,8 @@ docker_registry_mirrors:
 k8s_version: 1.23.6
 k8s_repo: aliyun
 
+k8s_pod_cidr: "10.244.0.0/16"
+k8s_service_cidr: "10.96.0.0/12"
+k8s_image_repository: "registry.aliyuncs.com/google_containers"
+
 ntp_service_route: ntp.service.sr

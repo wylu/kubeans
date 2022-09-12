@@ -8,9 +8,6 @@ k8s_ha_enable: false
 k8s_ha_version: 2.1.4
 
 k8s_external_etcd: false
-k8s_image_repository: "registry.aliyuncs.com/google_containers"
-k8s_service_cidr: "10.96.0.0/12"
-k8s_pod_cidr: "10.244.0.0/16"
 k8s_nodeport_ipranges: []
 
 k8s_apiserver_interface: ens18

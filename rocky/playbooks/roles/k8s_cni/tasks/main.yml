@@ -1,0 +1,27 @@
+---
+# https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calicoctl.yaml
+- name: create calico init config
+  template:
+    src: etc/kubernetes/manifests/calico.yaml.j2
+    dest: /etc/kubernetes/manifests/calico.yaml
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - k8s_cni
+
+- name: install k8s network plugin
+  shell:
+    cmd: kubectl apply -f /etc/kubernetes/manifests/calico.yaml
+  tags:
+    - k8s_cni
+
+- name: waiting network ready
+  shell: "kubectl get node|tail -n +2|awk '{print $2}'"
+  register: network_status
+  until: "'NotReady' not in network_status.stdout_lines"
+  retries: 30
+  delay: 60
+  ignore_errors: true
+  tags:
+    - k8s_cni
