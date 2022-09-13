@@ -4,3 +4,4 @@
 - import_playbook: setup_base.yml
 - import_playbook: setup_pypi.yml
 - import_playbook: setup_ntp.yml
+- import_playbook: setup_reboot.yml

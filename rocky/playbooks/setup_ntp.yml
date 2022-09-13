@@ -8,7 +8,7 @@
     ntp_pools:
       - 2.centos.pool.ntp.org iburst
 
-- hosts: all
+- hosts: k8s
   any_errors_fatal: true
   tasks:
     - name: setup ntp service route
@@ -26,7 +26,7 @@
         insertafter: EOF
       with_items: "{{ ips }}"
 
-- hosts: all:!ntp_server
+- hosts: k8s:!ntp_server
   any_errors_fatal: true
   roles:
     - role: ntp

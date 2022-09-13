@@ -6,15 +6,20 @@ Deploy kubernetes cluster using ansible
 
 示例：
 
-| Role       |   Host   |       IP       |    K8S |
-| :--------- | :------: | :------------: | -----: |
-| ntp_server | master01 | 10.128.170.231 | 1.23.6 |
-| k8s_master | master01 | 10.128.170.231 | 1.23.6 |
-| k8s_master | master02 | 10.128.170.232 | 1.23.6 |
-| k8s_master | master03 | 10.128.170.233 | 1.23.6 |
-| k8s_worker | worker01 | 10.128.170.21  | 1.23.6 |
-| k8s_worker | worker02 | 10.128.170.22  | 1.23.6 |
-| k8s_worker | worker03 | 10.128.170.23  | 1.23.6 |
+| Role           |   Host   |       IP       |    K8S |
+| :------------- | :------: | :------------: | -----: |
+| ansible_client | client00 | 10.128.170.230 |        |
+| ntp_server     | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master     | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master     | master02 | 10.128.170.232 | 1.23.6 |
+| k8s_master     | master03 | 10.128.170.233 | 1.23.6 |
+| k8s_worker     | worker01 | 10.128.170.21  | 1.23.6 |
+| k8s_worker     | worker02 | 10.128.170.22  | 1.23.6 |
+| k8s_worker     | worker03 | 10.128.170.23  | 1.23.6 |
+
+ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令。
+
+**注意：在 k8s_master 节点上执行部署命令时，需要将 inventory 文件中的 ansible_client 节点注释掉。**
 
 ## Rocky Linux 8.6
 
@@ -90,7 +95,7 @@ systemctl restart NetworkManager
 
 #### 安装设置 ansible
 
-只需在只执行剧本的节点执行即可，这里在 master01 执行。
+只需在只执行剧本的节点执行即可，这里在 ansible_client 节点或任意 k8s_master 节点执行。
 
 ```shell
 chmod +x setup_ansible.sh && ./setup_ansible.sh --password "root password"
@@ -105,13 +110,7 @@ ansible-playbook -i production playbooks/setup.yml \
     --ssh-common-args "-o StrictHostKeyChecking=no"
 ```
 
-#### 重启系统
-
-重启系统使配置生效
-
-```shell
-reboot
-```
+**注意：命令执行完后会自动重启系统使配置生效，需等待系统重启完成后才能继续后续步骤。**
 
 #### 安装设置 docker
 

@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: k8s
   any_errors_fatal: true
   gather_facts: false
   roles:
