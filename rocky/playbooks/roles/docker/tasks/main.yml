@@ -63,7 +63,7 @@
     jid: "{{ dnf_sleeper.ansible_job_id }}"
   register: job_result
   until: job_result.finished
-  retries: 100
+  retries: 60
   delay: 10
   tags:
     - docker-ce

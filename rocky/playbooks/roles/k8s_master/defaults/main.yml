@@ -1,9 +1,4 @@
 ---
-tmp_download_directory: /tmp/download
-
-k8s_helm_enable: true
-k8s_helm_version: 3.9.4
-
 k8s_ha_enable: false
 k8s_ha_version: 2.1.4
 

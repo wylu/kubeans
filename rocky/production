@@ -1,7 +1,6 @@
 # https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ini_inventory.html
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html
-
 [ansible_client]
 client00 ansible_connection=ssh ansible_host=10.128.170.230
 

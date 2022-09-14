@@ -37,6 +37,5 @@
       - "Dashboard listen on https://{{ k8s_apiserver_vip }}:30443/"
       - "Use following command to get access token of admin-user."
       - "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')"
-  connection: local
   tags:
     - k8s_dashboard

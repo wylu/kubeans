@@ -34,6 +34,3 @@
 
 - include_tasks: keepalived.yml
   when: k8s_ha_enable|default(false, true)|bool
-
-- include_tasks: helm.yml
-  when: k8s_helm_enable|default(false, true)|bool
