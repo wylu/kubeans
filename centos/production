@@ -1,0 +1,22 @@
+# https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ini_inventory.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html
+[ansible_client]
+client00 ansible_connection=ssh ansible_host=10.128.170.230
+
+[ntp_server]
+master01 ansible_connection=ssh ansible_host=10.128.170.231
+
+[k8s_master]
+master01 ansible_connection=ssh ansible_host=10.128.170.231
+master02 ansible_connection=ssh ansible_host=10.128.170.232
+master03 ansible_connection=ssh ansible_host=10.128.170.233
+
+[k8s_worker]
+worker01 ansible_connection=ssh ansible_host=10.128.170.21
+worker02 ansible_connection=ssh ansible_host=10.128.170.22
+worker03 ansible_connection=ssh ansible_host=10.128.170.23
+
+[k8s:children]
+k8s_master
+k8s_worker

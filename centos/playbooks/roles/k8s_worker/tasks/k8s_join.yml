@@ -1,0 +1,15 @@
+---
+- name: generate k8s join common
+  shell:
+    cmd: kubeadm token create --ttl 5m --print-join-command
+  register: k8s_worker_join_cmd
+  delegate_to: "{{ groups.k8s_master.0 }}"
+  tags:
+    - k8s_worker
+
+- name: join k8s worker
+  shell:
+    cmd: "{{ k8s_worker_join_cmd.stdout }}"
+    creates: /etc/kubernetes/kubelet.conf
+  tags:
+    - k8s_worker

@@ -1,5 +1,5 @@
 ---
-- name: setup Rocky-AppStream official repository
+- name: setup Rocky-AppStream nju repository
   yum_repository:
     name: appstream
     description: Rocky Linux $releasever - AppStream
@@ -11,7 +11,7 @@
     state: present
   notify: dnf makecache
 
-- name: setup Rocky-BaseOS official repository
+- name: setup Rocky-BaseOS nju repository
   yum_repository:
     name: baseos
     description: Rocky Linux $releasever - BaseOS
@@ -23,7 +23,7 @@
     state: present
   notify: dnf makecache
 
-- name: setup Rocky-Extras official repository
+- name: setup Rocky-Extras nju repository
   yum_repository:
     name: extras
     description: Rocky Linux $releasever - Extras

@@ -14,8 +14,19 @@ import os
 import pathlib
 import typing as t
 import yaml
-
 from collections import OrderedDict
+from enum import Enum
+
+
+class PackageManager(str, Enum):
+    YUM = 'yum'
+    DNF = 'dnf'
+
+
+class MirrorSource(str, Enum):
+    OFFICIAL = 'official'
+    TUNA = 'tuna'
+    NJU = 'nju'
 
 
 # https://www.cnblogs.com/langshiquan/p/9569898.html
@@ -43,6 +54,18 @@ class RepoUtil(object):
         return 'yes' if option else 'no'
 
     @classmethod
+    def get_files(
+        cls,
+        files: t.Set[str],
+        directory: str = DEFAULT_DIRECTORY,
+    ) -> t.List[str]:
+        return sorted(
+            os.path.join(directory, file)
+            for file in os.listdir(directory)
+            if file in files
+        )
+
+    @classmethod
     def load_file(cls, file: str) -> str:
         with open(file, 'r') as f:
             data = f.read()
@@ -54,34 +77,6 @@ class RepoUtil(object):
             segments.append(seg)
 
         return '\n\n'.join(segments)
-
-
-class RockyRepoUtil(RepoUtil):
-    FILES = {
-        'Rocky-AppStream.repo',
-        'Rocky-BaseOS.repo',
-        'Rocky-Debuginfo.repo',
-        'Rocky-Devel.repo',
-        'Rocky-Extras.repo',
-        'Rocky-HighAvailability.repo',
-        'Rocky-NFV.repo',
-        'Rocky-Plus.repo',
-        'Rocky-PowerTools.repo',
-        'Rocky-RT.repo',
-        'Rocky-ResilientStorage.repo',
-        'Rocky-Sources.repo',
-    }
-
-    @classmethod
-    def get_files(
-        cls,
-        directory: str = RepoUtil.DEFAULT_DIRECTORY,
-    ) -> t.List[str]:
-        return sorted(
-            os.path.join(directory, file)
-            for file in os.listdir(directory)
-            if file in cls.FILES
-        )
 
     @classmethod
     def parse_files(cls, files: t.List[str]) -> dict:
@@ -101,7 +96,7 @@ class RockyRepoUtil(RepoUtil):
                     mirrorlist=config[section].get('mirrorlist'),
                     baseurl=config[section].get('baseurl'),
                     gpgcheck=config[section].getint('gpgcheck'),
-                    enabled=config[section].getint('enabled'),
+                    enabled=config[section].getint('enabled', 1),
                     gpgkey=config[section]['gpgkey'],
                 ) for section in config.sections()
             ]
@@ -137,11 +132,16 @@ class RockyRepoUtil(RepoUtil):
                 )
 
     @classmethod
-    def to_ansible_yaml(cls, name2items: dict) -> str:
+    def to_ansible_yaml(
+        cls,
+        name2items: dict,
+        package_manager: PackageManager = PackageManager.YUM,
+        mirror_source: MirrorSource = MirrorSource.OFFICIAL,
+    ) -> str:
         tasks = []
 
         for name, items in name2items.items():
-            task = OrderedDict(name=f'setup {name} official repository')
+            task = OrderedDict(name=f'setup {name} {mirror_source} repository')
 
             with_items = []
             if len(items) > 1:
@@ -154,6 +154,7 @@ class RockyRepoUtil(RepoUtil):
                         witem['mirrorlist'] = item['mirrorlist']
                     if 'baseurl' in item:
                         witem['baseurl'] = item['baseurl']
+                    witem['enabled'] = cls.yesno(item['enabled'])
                     with_items.append(witem)
 
             item = items[0]
@@ -166,6 +167,8 @@ class RockyRepoUtil(RepoUtil):
                     yum_repository['mirrorlist'] = '{{ item.mirrorlist }}'
                 if 'baseurl' in item:
                     yum_repository['baseurl'] = '{{ item.baseurl }}'
+                yum_repository['gpgcheck'] = cls.yesno(item['gpgcheck'])
+                yum_repository['enabled'] = '{{ item.enabled }}'
             else:
                 yum_repository['name'] = item['section']
                 yum_repository['description'] = item['name']
@@ -173,9 +176,9 @@ class RockyRepoUtil(RepoUtil):
                     yum_repository['mirrorlist'] = item['mirrorlist']
                 if 'baseurl' in item:
                     yum_repository['baseurl'] = item['baseurl']
+                yum_repository['gpgcheck'] = cls.yesno(item['gpgcheck'])
+                yum_repository['enabled'] = cls.yesno(item['enabled'])
 
-            yum_repository['gpgcheck'] = cls.yesno(item['gpgcheck'])
-            yum_repository['enabled'] = cls.yesno(item['enabled'])
             yum_repository['file'] = name
             yum_repository['gpgkey'] = item['gpgkey']
             yum_repository['state'] = 'present'
@@ -185,7 +188,7 @@ class RockyRepoUtil(RepoUtil):
             if with_items:
                 task['with_items'] = with_items
 
-            task['notify'] = 'dnf makecache'
+            task['notify'] = f'{package_manager} makecache'
             tasks.append(task)
 
         data = yaml.dump(
@@ -201,7 +204,41 @@ class RockyRepoUtil(RepoUtil):
         return data
 
 
+class CentosRepoUtil(RepoUtil):
+    FILES = {
+        'CentOS-Base.repo',
+        # 'CentOS-CR.repo',
+        # 'CentOS-Debuginfo.repo',
+        # 'CentOS-fasttrack.repo',
+        # 'CentOS-Media.repo',
+        # 'CentOS-Sources.repo',
+        # 'CentOS-Vault.repo',
+        # 'CentOS-x86_64-kernel.repo',
+    }
+
+
+class RockyRepoUtil(RepoUtil):
+    FILES = {
+        'Rocky-AppStream.repo',
+        'Rocky-BaseOS.repo',
+        # 'Rocky-Debuginfo.repo',
+        # 'Rocky-Devel.repo',
+        'Rocky-Extras.repo',
+        # 'Rocky-HighAvailability.repo',
+        # 'Rocky-NFV.repo',
+        # 'Rocky-Plus.repo',
+        # 'Rocky-PowerTools.repo',
+        # 'Rocky-RT.repo',
+        # 'Rocky-ResilientStorage.repo',
+        # 'Rocky-Sources.repo',
+    }
+
+
 if __name__ == '__main__':
-    files = RockyRepoUtil.get_files()
-    name2items = RockyRepoUtil.parse_files(files)
-    print(RockyRepoUtil.to_ansible_yaml(name2items))
+    files = CentosRepoUtil.get_files(CentosRepoUtil.FILES)
+    name2items = CentosRepoUtil.parse_files(files)
+    print(CentosRepoUtil.to_ansible_yaml(name2items, PackageManager.YUM))
+
+    # files = RockyRepoUtil.get_files(RockyRepoUtil.FILES)
+    # name2items = RockyRepoUtil.parse_files(files)
+    # print(RockyRepoUtil.to_ansible_yaml(name2items, PackageManager.DNF))

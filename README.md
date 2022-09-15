@@ -21,13 +21,25 @@ ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是
 
 **注意：在 k8s_master 节点上执行部署命令时，需要将 inventory 文件中的 ansible_client 节点注释掉。**
 
-## Rocky Linux 8.6
+## 支持系统
 
-### 环境准备
+### CentOS Linux 7.9
+
+[CentOS-7-x86_64-Minimal-2009.iso](https://mirror.tuna.tsinghua.edu.cn/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso)
+
+在 centos linux 系统上部署 k8s，进入 "centos" 目录执行 playbook。
+
+### Rocky Linux 8.6
+
+[Rocky-8.6-x86_64-minimal.iso](https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8.6-x86_64-minimal.iso)
+
+在 rocky linux 系统上部署 k8s，进入 "rocky" 目录执行 playbook。
+
+## 环境准备
 
 **全部机器均需要执行以下配置，具体配置内容需根据实际情况而定。**
 
-#### 配置静态 IP
+### 配置静态 IP
 
 编辑以下配置文件
 
@@ -83,9 +95,9 @@ systemctl restart NetworkManager
        valid_lft forever preferred_lft forever
 ```
 
-### 部署步骤
+## 部署步骤
 
-#### 修改 production 清单文件
+### 修改 production 清单文件
 
 根据规划，在清单文件中配置需要部署 K8S 的主机 IP
 
@@ -93,7 +105,7 @@ systemctl restart NetworkManager
 - k8s_worker 至少一个以上
 - k8s_master 和 k8s_worker 节点不能重复
 
-#### 安装设置 ansible
+### 安装设置 ansible
 
 只需在只执行剧本的节点执行即可，这里在 ansible_client 节点或任意 k8s_master 节点执行。
 
@@ -103,7 +115,7 @@ chmod +x setup_ansible.sh && ./setup_ansible.sh --password "root password"
 
 该脚本将会安装 ansible，同时设置节点间免密登录。
 
-#### 节点基础设置
+### 节点基础设置
 
 ```shell
 ansible-playbook -i production playbooks/setup.yml \
@@ -112,9 +124,9 @@ ansible-playbook -i production playbooks/setup.yml \
 
 **注意：命令执行完后会自动重启系统使配置生效，需等待系统重启完成后才能继续后续步骤。**
 
-#### 安装设置 docker
+### 安装设置 docker
 
-##### 可配置变量
+#### 可配置变量
 
 docker 磁盘挂载
 
@@ -124,15 +136,15 @@ docker 磁盘挂载
 | docker_imagefs_label | string | docker_imagefs_dev文件系统标签 | 默认 docker-imagefs                                                            |
 | docker_imagefs_opts  | string | docker_imagefs_dev文件系统选项 | 默认 -L {{ docker_imagefs_label }}，一般情况不需要设置，除非你知道自己在做什么 |
 
-##### 部署命令
+#### 部署命令
 
 ```shell
 ansible-playbook -i production playbooks/install_docker.yml
 ```
 
-#### 安装 kubernetes
+### 安装 kubernetes
 
-##### 可配置变量
+#### 可配置变量
 
 k8s 高可用
 
@@ -164,7 +176,7 @@ k8s 磁盘挂载
 | k8s_etcd_label   | string | k8s_etcd_dev 文件系统标签   | 默认 k8s-etcd                                                                |
 | k8s_etcd_opts    | string | k8s_etcd_dev 文件系统选项   | 默认 "-L {{ k8s_etcd_label }}"，一般情况不需要设置，除非你知道自己在做什么   |
 
-##### 高可用部署
+#### 高可用部署
 
 ```shell
 ansible-playbook -i production playbooks/install_k8s.yml \
@@ -173,13 +185,11 @@ ansible-playbook -i production playbooks/install_k8s.yml \
     -e k8s_apiserver_vmask=24
 ```
 
-##### 非高可用部署
+#### 非高可用部署
 
 ```shell
 ansible-playbook -i production playbooks/install_k8s.yml
 ```
-
-## CentOS Linux 7.9
 
 ## 测试
 

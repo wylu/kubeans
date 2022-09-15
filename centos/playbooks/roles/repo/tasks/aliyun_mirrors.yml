@@ -1,0 +1,29 @@
+---
+- name: setup CentOS-Base aliyun repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/os/$basearch/
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/updates/$basearch/
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/extras/$basearch/
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/centosplus/$basearch/
+      enabled: no
+  notify: yum makecache

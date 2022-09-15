@@ -1,6 +1,6 @@
 ---
 - name: install kubernetes packages
-  yum:
+  dnf:
     name:
       - kubeadm-{{ k8s_version }}
       - kubelet-{{ k8s_version }}

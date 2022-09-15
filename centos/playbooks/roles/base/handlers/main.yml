@@ -1,0 +1,10 @@
+---
+- name: reload sysctl
+  shell: sysctl --system
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    daemon_reload: true
+    state: restarted
+    enabled: true

@@ -1,0 +1,9 @@
+---
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: true
+  roles:
+    - role: reboot
+  vars:
+    # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
+    ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split() | first }}"

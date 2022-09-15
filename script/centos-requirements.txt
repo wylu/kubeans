@@ -1,0 +1,5 @@
+# python 3.6.8
+click==8.0.4
+flake8==5.0.4
+yapf==0.32.0
+PyYAML==6.0

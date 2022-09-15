@@ -1,0 +1,5 @@
+---
+- name: install base utilities
+  yum:
+    name: "{{ utilities }}"
+    state: present

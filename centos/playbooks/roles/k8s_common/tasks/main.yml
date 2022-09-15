@@ -1,0 +1,95 @@
+---
+- name: create a ext4 filesystem on {{ k8s_nodefs_dev }} and check disk blocks
+  filesystem:
+    fstype: ext4
+    dev: "{{ k8s_nodefs_dev }}"
+    opts: "{{ k8s_nodefs_opts }}"
+  when: (k8s_nodefs_dev is defined) and (k8s_nodefs_dev|length > 0)
+  tags:
+    - k8s-common
+  register: k8s_filesystem_result
+
+- when: k8s_filesystem_result.changed
+  set_fact:
+    k8s_nodefs_mount_src: LABEL={{ k8s_nodefs_label }}
+
+- name: mount {{ k8s_nodefs_mount_src }} on /var/lib/kubelet
+  mount:
+    path: /var/lib/kubelet
+    src: "{{ k8s_nodefs_mount_src }}"
+    fstype: ext4
+    state: mounted
+  when: (k8s_nodefs_mount_src is defined) and (k8s_nodefs_mount_src|length > 0)
+  tags:
+    - k8s-common
+
+- name: create a ext4 filesystem on {{ k8s_etcd_dev }} and check disk blocks
+  filesystem:
+    fstype: ext4
+    dev: "{{ k8s_etcd_dev }}"
+    opts: "{{ k8s_etcd_opts }}"
+  when: (k8s_etcd_dev is defined) and (k8s_etcd_dev|length > 0)
+  tags:
+    - k8s-common
+  register: k8s_filesystem_result
+
+- when: k8s_filesystem_result.changed
+  set_fact:
+    k8s_etcd_mount_src: LABEL={{ k8s_etcd_label }}
+
+- name: mount {{ k8s_etcd_mount_src }} on /var/lib/kubelet
+  mount:
+    path: /var/lib/etcd
+    src: "{{ k8s_etcd_mount_src }}"
+    fstype: ext4
+    state: mounted
+  when: (k8s_etcd_mount_src is defined) and (k8s_etcd_mount_src|length > 0)
+  tags:
+    - k8s-common
+
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- name: setup official kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: yes
+    enabled: yes
+    file: kubernetes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    state: present
+  notify: yum makecache
+  when: k8s_repo == "official"
+  tags:
+    - k8s-common
+
+# https://developer.aliyun.com/mirror/kubernetes
+- name: setup aliyun kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+    gpgcheck: yes
+    enabled: yes
+    file: kubernetes
+    gpgkey: https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+    state: present
+  notify: yum makecache
+  when: k8s_repo == "aliyun"
+  tags:
+    - k8s-common
+
+# http://www.jinbuguo.com/systemd/systemd.slice.html
+# http://www.jinbuguo.com/systemd/systemd.resource-control.html
+# http://www.jinbuguo.com/systemd/systemd.unit.html
+# http://www.jinbuguo.com/systemd/systemd.service.html
+# https://www.cnblogs.com/sparkdev/p/8448237.html
+# https://www.cnblogs.com/sparkdev/p/9523194.html
+# https://developer.aliyun.com/article/810635
+- name: copy systemd unit
+  copy:
+    src: system
+    dest: /etc/systemd
+  notify: enable kubernetes.slice
+  tags:
+    - k8s-common

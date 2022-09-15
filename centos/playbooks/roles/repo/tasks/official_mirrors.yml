@@ -1,0 +1,29 @@
+---
+- name: setup CentOS-Base official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    mirrorlist: "{{ item.mirrorlist }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+      enabled: no
+  notify: yum makecache

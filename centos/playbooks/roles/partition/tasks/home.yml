@@ -1,0 +1,23 @@
+---
+- name: umount home partition
+  command: "umount /home"
+  register: umount_result
+
+- name: disable home partition
+  shell: sed -i 's/^\/dev\/mapper\/centos-home/#&/' /etc/fstab
+  register: disable_result
+  when: umount_result.rc == 0
+
+- name: remove lv of home partition
+  shell: lvremove /dev/mapper/centos-home -y
+  register: remove_result
+  when: disable_result.rc == 0
+
+- name: extend lv of root partition
+  command: lvextend -l +100%FREE /dev/mapper/centos-root
+  register: extend_result
+  when: remove_result.rc == 0
+
+- name: xfs_growfs root partition
+  command: xfs_growfs /dev/mapper/centos-root
+  when: extend_result.rc == 0

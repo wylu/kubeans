@@ -10,16 +10,12 @@
 @Desc    :
 """
 import typing as t
-from enum import Enum
 
 import click
 
+from .utils import MirrorSource
+from .utils import PackageManager
 from .utils import RockyRepoUtil
-
-
-class MirrorSource(str, Enum):
-    OFFICIAL = 'official'
-    NJU = 'nju'
 
 
 class MirrorHandler(object):
@@ -30,10 +26,10 @@ class MirrorHandler(object):
 
     @classmethod
     def handle_official(cls, file: t.Optional[str]) -> None:
-        files = RockyRepoUtil.get_files()
+        files = RockyRepoUtil.get_files(RockyRepoUtil.FILES)
         name2items = RockyRepoUtil.parse_files(files)
         RockyRepoUtil.use_mirrorlist(name2items)
-        data = RockyRepoUtil.to_ansible_yaml(name2items)
+        data = RockyRepoUtil.to_ansible_yaml(name2items, PackageManager.DNF)
 
         if not file:
             print(data)
@@ -44,14 +40,18 @@ class MirrorHandler(object):
 
     @classmethod
     def handle_nju(cls, file: t.Optional[str]) -> None:
-        files = RockyRepoUtil.get_files()
+        files = RockyRepoUtil.get_files(RockyRepoUtil.FILES)
         name2items = RockyRepoUtil.parse_files(files)
         RockyRepoUtil.use_baseurl(
             name2items,
             old_prefix='http://dl.rockylinux.org/$contentdir',
             new_prefix='https://mirrors.nju.edu.cn/rocky',
         )
-        data = RockyRepoUtil.to_ansible_yaml(name2items)
+        data = RockyRepoUtil.to_ansible_yaml(
+            name2items,
+            PackageManager.DNF,
+            MirrorSource.NJU,
+        )
 
         if not file:
             print(data)
@@ -71,7 +71,7 @@ def rocky():
     '-s',
     '--source',
     required=True,
-    type=click.Choice([source for source in MirrorSource]),
+    type=click.Choice([MirrorSource.OFFICIAL, MirrorSource.NJU]),
     help='Choose what mirror source to use.',
 )
 @click.option(

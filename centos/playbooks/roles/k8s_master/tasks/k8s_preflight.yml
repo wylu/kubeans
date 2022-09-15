@@ -1,0 +1,36 @@
+---
+- name: check kubernetes ha mode
+  assert:
+    that:
+      - k8s_ha_enable|bool
+    fail_msg: "'k8s_ha_enable=true' must be set for ha mode"
+  # https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
+  when: ansible_play_hosts_all|length > 1
+  tags:
+    - k8s_master
+
+- name: install kubernetes packages
+  yum:
+    name:
+      - kubeadm-{{ k8s_version }}
+      - kubelet-{{ k8s_version }}
+      - kubectl-{{ k8s_version }}
+    state: present
+  notify: enable kubelet
+  tags:
+    - k8s_master
+
+- name: create user kube directory
+  file:
+    path: ~/.kube
+    state: directory
+  tags:
+    - k8s_master
+
+# https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/
+# https://github.com/kubernetes/kubeadm/blob/main/docs/ha-considerations.md#options-for-software-load-balancing
+- include_tasks: haproxy.yml
+  when: k8s_ha_enable|default(false, true)|bool
+
+- include_tasks: keepalived.yml
+  when: k8s_ha_enable|default(false, true)|bool

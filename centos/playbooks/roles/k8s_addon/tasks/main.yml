@@ -1,0 +1,6 @@
+---
+- import_tasks: helm.yml
+  when: addon == "helm" and helm_enable|bool
+
+- import_tasks: dashboard.yml
+  when: addon == "dashboard" and dashboard_enbale|bool
