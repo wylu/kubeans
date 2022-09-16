@@ -11,7 +11,7 @@
 - hosts: k8s
   any_errors_fatal: true
   tasks:
-    - name: setup ntp service route
+    - name: setup {{ ntp_service }} hosts
       vars:
         ips: |-
           {%- set ips = [] -%}
@@ -21,8 +21,8 @@
           {{- ips|unique -}}
       lineinfile:
         path: /etc/hosts
-        regexp: "{{ ntp_service_route }}$"
-        line: "{{ item }} {{ ntp_service_route }}"
+        regexp: "{{ ntp_service }}$"
+        line: "{{ item }} {{ ntp_service }}"
         insertafter: EOF
       with_items: "{{ ips }}"
 
@@ -32,5 +32,5 @@
     - role: ntp
   vars:
     ntp_servers:
-      - ntp.service.sr iburst
+      - ntp.service iburst
     ntp_pools: []

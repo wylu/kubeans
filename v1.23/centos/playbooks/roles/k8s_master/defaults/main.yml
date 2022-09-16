@@ -1,7 +1,4 @@
 ---
-k8s_ha_enable: false
-k8s_ha_version: 2.1.4
-
 k8s_external_etcd: false
 k8s_nodeport_ipranges: []
 
@@ -13,6 +10,8 @@ k8s_apiserver_vinterface: "{{ k8s_apiserver_interface }}"
 k8s_apiserver_vport: 5000
 k8s_apiserver_vip: 192.168.0.1
 k8s_apiserver_vmask: 24
+
+k8s_haproxy_version: 2.1.4
 
 k8s_keepalived_version: 2.0.17
 k8s_keepalived_state: BACKUP

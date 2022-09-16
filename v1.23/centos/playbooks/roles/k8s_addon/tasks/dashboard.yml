@@ -32,10 +32,14 @@
     - k8s_dashboard
 
 - name: get admin-user access token
+  vars:
+    # host: "{{ groups['k8s_master'][0] }}"
+    host: "{{ groups.k8s_master.0 }}"
+    address: "https://{{ k8s_apiserver_vip|default(hostvars[host]['ansible_host'], true) }}:30443/"
   debug:
     msg:
-      - "Dashboard listen on https://{{ k8s_apiserver_vip }}:30443/"
+      - "Dashboard listen on {{ address }}"
       - "Use following command to get access token of admin-user."
-      - "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')"
+      - "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret|grep admin-user|awk '{print $1}')"
   tags:
     - k8s_dashboard
