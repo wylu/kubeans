@@ -25,21 +25,21 @@ VERBOSE=false
 CURRENT=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # ansible 清单文件路径
 # https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
-INVENTORY=$CURRENT/production
+INVENTORY=$CURRENT/inventory
 # ssh 连接密码
 PASSWORD=
 
 function setup_repo() {
     echo -e "\n************************ Setup Repo Begin ***********************"
     # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
-    if ! compgen -G "/etc/yum.repos.d/CentOS-*.repo.bak" >/dev/null; then
+    if ! compgen -G "/etc/yum.repos.d/Rocky-*.repo.bak" >/dev/null; then
         # shellcheck disable=SC2016
         sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-            -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+            -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
             -i.bak \
-            /etc/yum.repos.d/CentOS-*.repo
+            /etc/yum.repos.d/Rocky-*.repo
 
-        yum makecache
+        dnf makecache
     fi
     echo "************************* Setup Repo End ************************"
 }
@@ -47,39 +47,35 @@ function setup_repo() {
 function reset_repo() {
     echo -e "\n************************ Reset Repo Begin ***********************"
     # shellcheck disable=SC2016
-    rm -f /etc/yum.repos.d/CentOS-*.repo
-    rename '.bak' '' /etc/yum.repos.d/CentOS-*.bak
+    rm -f /etc/yum.repos.d/Rocky-*.repo
+    rename '.bak' '' /etc/yum.repos.d/Rocky-*.bak
 
-    yum makecache
+    dnf makecache
     echo "************************* Reset Repo End ************************"
 }
 
 function setup_ansible() {
     echo -e "\n********************** Setup Ansible Begin **********************"
-    yum install epel-release -y
-    yum install ansible -y
+    dnf install epel-release -y
+    dnf install ansible -y
     ansible --version
 
-    echo -e "\nDownload default ansible.cfg from github"
     # 初始化 ansible 配置
     # Ansible Configuration Settings
-    # https://docs.ansible.com/ansible/2.9/reference_appendices/config.html
-    # https://github.com/ansible/ansible/blob/stable-2.9/examples/ansible.cfg
-    # https://curl.se/docs/manpage.html
-    curl -k -C - https://cdn.jsdelivr.net/gh/ansible/ansible@stable-2.9/examples/ansible.cfg \
-        -o /etc/ansible/ansible.cfg
+    # https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+    ansible-config init --disabled >/etc/ansible/ansible.cfg
 
     # 打印每个 task 执行时间
     # Ansible callback plugin for timing individual tasks and overall execution time.
     # https://docs.ansible.com/ansible/latest/collections/ansible/posix/profile_tasks_callback.html
-    sed -i 's/.*callback_whitelist.*/callback_whitelist = profile_tasks/g' \
+    sed -i 's/.*callbacks_enabled.*/callbacks_enabled=profile_tasks/g' \
         /etc/ansible/ansible.cfg
     echo "*********************** Setup Ansible End ***********************"
 }
 
 function setup_sshkey() {
     echo -e "\n*********************** Setup sshkey Begin **********************"
-    yum install expect -y
+    dnf install expect -y
 
     # shellcheck disable=SC2016
     command='

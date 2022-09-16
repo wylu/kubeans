@@ -6,7 +6,9 @@ docker_version: 20.10.17
 docker_repo: aliyun
 docker_official_repo: https://download.docker.com/linux/centos/docker-ce.repo
 docker_aliyun_repo: http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# https://cloud.tencent.com/developer/article/1632438
 docker_registry_mirrors:
+  - https://hub-mirror.c.163.com
   - https://kn0t2bca.mirror.aliyuncs.com
 
 k8s_version: 1.23.6
