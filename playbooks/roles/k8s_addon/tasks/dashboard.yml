@@ -16,7 +16,11 @@
   shell: kubectl apply -f /etc/kubernetes/manifests/addon/dashboard/
 
 - name: waiting dashboard ready
-  shell: kubectl get pod -n kubernetes-dashboard|tail -n +2|awk '{print $3}'
+  shell: >-
+    set -o pipefail
+    && kubectl get pod -n kubernetes-dashboard
+    | tail -n +2
+    | awk '{print $3}'
   register: dashboard_status
   # https://stackoverflow.com/questions/42673045/ansible-when-statements-should-not-include-jinja2-templating-delimiters
   until: dashboard_status.stdout_lines|unique|list == ['Running']

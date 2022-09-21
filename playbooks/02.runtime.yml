@@ -1,12 +1,12 @@
 ---
-# - hosts: k8s
-#   any_errors_fatal: true
-#   roles:
-#     - role: docker
-#       tags: docker
-#       vars:
-#         docker_repo: aliyun
-#       when: CONTAINER_RUNTIME == "docker"
+- hosts: k8s
+  any_errors_fatal: true
+  roles:
+    - role: docker
+      tags: docker
+      vars:
+        docker_repo: aliyun
+      when: CONTAINER_RUNTIME == "docker"
 
 - hosts: k8s_master[0]
   any_errors_fatal: true

@@ -13,7 +13,11 @@
 
 # https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met
 - name: waiting network ready
-  shell: kubectl get pod -n kube-system -o wide|grep 'calico-node'|awk '{print $3}'
+  shell: >-
+    set -o pipefail
+    && kubectl get pod -n kube-system -o wide
+    | grep 'calico-node'
+    | awk '{print $3}'
   register: calico_status
   until: calico_status.stdout_lines|unique|list == ['Running']
   retries: 60

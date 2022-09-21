@@ -49,11 +49,12 @@ CALICO_VER: "3.24.1"
 # role:cluster-addon
 ############################
 # helm 自动安装
-HELM_INSTALL: "yes"
+HELM_ENABLE: "yes"
 HELM_VER: "3.9.4"
 # metrics-server 自动安装
-METRICES_SERVER_INSTALL: "yes"
+METRICES_SERVER_ENABLE: "yes"
+METRICES_SERVER_VER: "0.6.1"
 # dashboard 自动安装
-DASHBOARD_INSTALL: "yes"
+DASHBOARD_ENABLE: "yes"
 DASHBOARD_VER: "2.6.1"
 METRICS_SCRAPER_VER: "1.0.8"

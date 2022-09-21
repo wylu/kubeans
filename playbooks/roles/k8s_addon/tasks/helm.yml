@@ -19,11 +19,11 @@
 - name: unarchive helm package
   unarchive:
     src: "~/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
-    dest: /usr/share
+    dest: /usr/local
     owner: root
 
 - name: create helm symbolic link
   file:
-    src: /usr/share/linux-amd64/helm
-    dest: /usr/sbin/helm
+    src: /usr/local/linux-amd64/helm
+    dest: /usr/local/bin/helm
     state: link

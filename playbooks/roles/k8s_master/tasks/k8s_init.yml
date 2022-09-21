@@ -9,7 +9,11 @@
 
 - name: init k8s using kubeadm
   shell:
-    cmd: kubeadm init --upload-certs --ignore-preflight-errors="DirAvailable--var-lib-etcd" --config ~/kubeadm-init.conf
+    cmd: |-
+      kubeadm init \
+        --upload-certs \
+        --ignore-preflight-errors DirAvailable--var-lib-etcd \
+        --config ~/kubeadm-init.conf
     creates: /etc/kubernetes/admin.conf
 
 - name: create user kube config

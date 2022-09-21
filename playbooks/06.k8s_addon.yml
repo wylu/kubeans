@@ -13,4 +13,8 @@
     - role: k8s_addon
       tags: k8s_addon
       vars:
+        addon: metrics_server
+    - role: k8s_addon
+      tags: k8s_addon
+      vars:
         addon: dashboard

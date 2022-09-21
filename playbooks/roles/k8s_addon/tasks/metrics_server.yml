@@ -1,0 +1,25 @@
+---
+- name: prepare metrics server directory
+  file:
+    name: /etc/kubernetes/manifests/addon/metrics_server
+    state: directory
+
+- name: prepare metrics server deployment file
+  template:
+    src: metrics_server/components.yaml.j2
+    dest: /etc/kubernetes/manifests/addon/metrics_server/components.yaml
+
+- name: apply metrics server deployment
+  shell: kubectl apply -f /etc/kubernetes/manifests/addon/metrics_server/
+
+- name: waiting metrics server ready
+  shell: >-
+    set -o pipefail
+    && kubectl -n kube-system get pod
+    | grep metrics-server
+    | awk '{print $3}'
+  register: metrics_server_status
+  # https://stackoverflow.com/questions/42673045/ansible-when-statements-should-not-include-jinja2-templating-delimiters
+  until: metrics_server_status.stdout_lines|unique|list == ['Running']
+  retries: 30
+  delay: 20

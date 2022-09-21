@@ -25,7 +25,10 @@
   when: check_result.stdout == ""
 
 - name: tag {{ repository }}:{{ tag }} image
-  command: "docker tag {{ repository }}:{{ tag }} {{ LOCAL_REGISTRY }}/{{ repository }}:{{ tag }}"
+  command: >-
+    docker tag
+      {{ repository }}:{{ tag }}
+      {{ LOCAL_REGISTRY }}/{{ local_repository }}:{{ tag }}
 
-- name: push {{ repository }}:{{ tag }} image to local registry
-  command: "docker push {{ LOCAL_REGISTRY }}/{{ repository }}:{{ tag }}"
+- name: push {{ local_repository }}:{{ tag }} image to local registry
+  command: "docker push {{ LOCAL_REGISTRY }}/{{ local_repository }}:{{ tag }}"

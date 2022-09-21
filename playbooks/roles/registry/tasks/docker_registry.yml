@@ -52,23 +52,64 @@
         registry:{{ REGISTRY_VER }}
   when: check_result.stdout == ""
 
+# https://github.com/burnettk/delete-docker-registry-image
+#
+# Set up your data directory via an environment variable:
+# $ export REGISTRY_DATA_DIR=/opt/registry_data/docker/registry/v2
+#
+# You can also just edit the script where this variable is set to
+# make it work for your setup.
+#
+# Almost delete a repo:
+# $ delete_docker_registry_image --image testrepo/awesomeimage --dry-run
+#
+# Actually delete a repo (remember to shut down your registry first):
+# $ delete_docker_registry_image --image testrepo/awesomeimage
+#
+# Delete one tag from a repo:
+# $ delete_docker_registry_image --image testrepo/awesomeimage:supertag
+#
+- name: copy delete local registry image tool
+  copy:
+    src: delete_docker_registry_image.py
+    dest: /usr/local/bin/delete_docker_registry_image
+    owner: root
+    group: root
+    mode: 0755
+
 - name: pull images and push to local registry
   include_tasks: docker_cache.yml
   vars:
     repository: "{{ item.repository }}"
     tag: "{{ item.tag }}"
+    local_repository: "{{ item.local_repository|default(item.repository, true) }}"
+  when: item.enable == "yes"
   with_items:
     - repository: haproxy
       tag: "{{ HAPROXY_VER }}"
+      enable: "{{ HA_ENABLE|default('no', true) }}"
     - repository: osixia/keepalived
       tag: "{{ KEEPALIVED_VER }}"
+      enable: "{{ HA_ENABLE|default('no', true) }}"
+
     - repository: calico/cni
       tag: "v{{ CALICO_VER }}"
+      enable: "{{ (CLUSTER_NETWORK == 'calico')|ternary('yes', 'no') }}"
     - repository: calico/node
       tag: "v{{ CALICO_VER }}"
+      enable: "{{ (CLUSTER_NETWORK == 'calico')|ternary('yes', 'no') }}"
     - repository: calico/kube-controllers
       tag: "v{{ CALICO_VER }}"
+      enable: "{{ (CLUSTER_NETWORK == 'calico')|ternary('yes', 'no') }}"
+
+    - repository: "{{ K8S_IMAGE_REPOSITORY }}/metrics-server"
+      tag: "v{{ METRICES_SERVER_VER }}"
+      local_repository: "metrics-server/metrics-server"
+      enable: "{{ METRICES_SERVER_ENABLE|default('no', true) }}"
+
     - repository: kubernetesui/dashboard
       tag: "v{{ DASHBOARD_VER }}"
+      enable: "{{ DASHBOARD_ENABLE|default('no', true) }}"
     - repository: kubernetesui/metrics-scraper
       tag: "v{{ METRICS_SCRAPER_VER }}"
+      enable: "{{ DASHBOARD_ENABLE|default('no', true) }}"

@@ -16,11 +16,7 @@
     - [分步部署](#分步部署)
       - [设置基础环境](#设置基础环境)
       - [安装容器运行时](#安装容器运行时)
-      - [安装 k8s](#安装-k8s)
-        - [安装 k8s master](#安装-k8s-master)
-        - [安装 k8s worker](#安装-k8s-worker)
-        - [安装 k8s network](#安装-k8s-network)
-        - [安装 k8s addon](#安装-k8s-addon)
+      - [安装 kubernetes](#安装-kubernetes)
   - [kubernetes 测试](#kubernetes-测试)
     - [测试域名解析](#测试域名解析)
       - [dig 测试](#dig-测试)
@@ -175,35 +171,37 @@ ansible-playbook -i hosts.ini playbooks/01.prepare.yml
 ansible-playbook -i hosts.ini playbooks/02.runtime.yml
 ```
 
-#### 安装 k8s
+#### 安装 kubernetes
 
-```shell
-ansible-playbook -i hosts.ini playbooks/80.setup_k8s.yml
-```
+- 安装 k8s master
 
-##### 安装 k8s master
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/03.k8s_master.yml
+  ```
 
-```shell
-ansible-playbook -i hosts.ini playbooks/03.k8s_master.yml
-```
+- 安装 k8s worker
 
-##### 安装 k8s worker
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/04.k8s_worker.yml
+  ```
 
-```shell
-ansible-playbook -i hosts.ini playbooks/04.k8s_worker.yml
-```
+- 安装 k8s network
 
-##### 安装 k8s network
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/05.network.yml
+  ```
 
-```shell
-ansible-playbook -i hosts.ini playbooks/05.network.yml
-```
+- 安装 k8s addon
 
-##### 安装 k8s addon
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/06.k8s_addon.yml
+  ```
 
-```shell
-ansible-playbook -i hosts.ini playbooks/06.k8s_addon.yml
-```
+> 或者一键安装 k8s 相关组件：
+>
+> ```shell
+> ansible-playbook -i hosts.ini playbooks/80.setup_k8s.yml
+> ```
 
 ## kubernetes 测试
 

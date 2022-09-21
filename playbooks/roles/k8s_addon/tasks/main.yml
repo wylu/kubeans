@@ -1,8 +1,12 @@
 ---
 - import_tasks: helm.yml
   tags: helm
-  when: addon == "helm" and HELM_INSTALL == "yes"
+  when: addon == "helm" and HELM_ENABLE == "yes"
+
+- import_tasks: metrics_server.yml
+  tags: metrics_server
+  when: addon == "metrics_server" and METRICES_SERVER_ENABLE == "yes"
 
 - import_tasks: dashboard.yml
   tags: dashboard
-  when: addon == "dashboard" and DASHBOARD_INSTALL == "yes"
+  when: addon == "dashboard" and DASHBOARD_ENABLE == "yes"
