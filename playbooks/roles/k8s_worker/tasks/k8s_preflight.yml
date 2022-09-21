@@ -1,0 +1,8 @@
+---
+- name: install kubernetes packages
+  yum:
+    name:
+      - kubeadm-{{ K8S_VER }}
+      - kubelet-{{ K8S_VER }}
+    state: present
+  notify: enable kubelet

@@ -1,0 +1,7 @@
+---
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  roles:
+    - role: calico
+      tags: calico
+      when: CLUSTER_NETWORK == "calico"

@@ -1,0 +1,33 @@
+---
+- name: create keepalived config directory
+  file:
+    path: /etc/keepalived
+    state: directory
+    owner: root
+    group: root
+
+# https://www.keepalived.org/manpage.html
+# https://weizhimiao.github.io/2017/02/11/keepalived%E9%85%8D%E7%BD%AE%E6%95%B4%E7%90%86/
+- name: create keepalived config
+  template:
+    src: etc/keepalived/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: create keepalived check apiserver script
+  template:
+    src: etc/keepalived/check_apiserver.sh
+    dest: /etc/keepalived
+    owner: root
+    group: root
+    mode: 0755
+
+- name: create keepalived static pod
+  template:
+    src: etc/kubernetes/manifests/keepalived.yaml.j2
+    dest: /etc/kubernetes/manifests/keepalived.yaml
+    owner: root
+    group: root
+    mode: 0600

@@ -1,0 +1,9 @@
+---
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
+- hosts: all
+  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: sshkey
+      tags: sshkey

@@ -1,7 +1,0 @@
----
-- name: restart chronyd
-  systemd:
-    name: chronyd
-    daemon_reload: true
-    state: restarted
-    enabled: true

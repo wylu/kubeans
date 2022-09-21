@@ -1,0 +1,13 @@
+---
+- hosts: k8s_worker
+  any_errors_fatal: true
+  roles:
+    - role: k8s_common
+      tags: k8s_common
+      vars:
+        k8s_repo: aliyun
+    - role: k8s_worker
+      tags: k8s_worker
+      vars:
+        k8s_preflight: true
+        k8s_join: true

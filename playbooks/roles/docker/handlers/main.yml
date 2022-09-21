@@ -1,0 +1,10 @@
+---
+- name: yum makecache
+  command: yum makecache
+
+- name: restart and enable docker
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: docker
+    state: restarted

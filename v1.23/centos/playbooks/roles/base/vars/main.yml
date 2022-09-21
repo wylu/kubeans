@@ -1,7 +1,0 @@
----
-utilities:
-  - bash-completion
-  - openssh
-  - python36
-  # - java-11-openjdk
-  - yum-utils

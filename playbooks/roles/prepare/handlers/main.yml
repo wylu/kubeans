@@ -1,0 +1,26 @@
+---
+- name: yum clean all
+  command: yum clean all
+
+- name: yum makecache
+  command: yum makecache
+
+- name: reload sysctl
+  command: sysctl --system
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    daemon_reload: true
+    state: restarted
+    enabled: true
+
+- name: upgrade pip
+  command: python3 -m pip install --upgrade pip
+
+- name: restart chronyd
+  systemd:
+    name: chronyd
+    daemon_reload: true
+    state: restarted
+    enabled: true

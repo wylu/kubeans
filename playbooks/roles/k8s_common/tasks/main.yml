@@ -1,0 +1,41 @@
+---
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- name: setup official kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: yes
+    enabled: yes
+    file: kubernetes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    state: present
+  notify: yum makecache
+  when: k8s_repo == "official"
+
+# https://developer.aliyun.com/mirror/kubernetes
+- name: setup aliyun kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+    gpgcheck: yes
+    enabled: yes
+    file: kubernetes
+    gpgkey: https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+    state: present
+  notify: yum makecache
+  when: k8s_repo == "aliyun"
+
+# http://www.jinbuguo.com/systemd/systemd.slice.html
+# http://www.jinbuguo.com/systemd/systemd.resource-control.html
+# http://www.jinbuguo.com/systemd/systemd.unit.html
+# http://www.jinbuguo.com/systemd/systemd.service.html
+# https://www.cnblogs.com/sparkdev/p/8448237.html
+# https://www.cnblogs.com/sparkdev/p/9523194.html
+# https://developer.aliyun.com/article/810635
+- name: copy systemd unit
+  copy:
+    src: system
+    dest: /etc/systemd
+  notify: enable kubernetes.slice

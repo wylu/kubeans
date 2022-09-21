@@ -1,6 +1,0 @@
----
-k8s_nodefs_label: k8s-nodefs
-k8s_nodefs_opts: -L {{ k8s_nodefs_label }}
-
-k8s_etcd_label: k8s-etcd
-k8s_etcd_opts: -L {{ k8s_etcd_label }}

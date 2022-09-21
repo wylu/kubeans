@@ -1,0 +1,120 @@
+---
+- name: setup official repository
+  block:
+    - name: setup Rocky-AppStream official repository
+      yum_repository:
+        name: appstream
+        description: Rocky Linux $releasever - AppStream
+        mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStream-$releasever
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-AppStream
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-BaseOS official repository
+      yum_repository:
+        name: baseos
+        description: Rocky Linux $releasever - BaseOS
+        mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-$releasever
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-BaseOS
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-Extras official repository
+      yum_repository:
+        name: extras
+        description: Rocky Linux $releasever - Extras
+        mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=extras-$releasever
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-Extras
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "official"
+
+- name: setup nju repository
+  block:
+    - name: setup Rocky-AppStream nju repository
+      yum_repository:
+        name: appstream
+        description: Rocky Linux $releasever - AppStream
+        baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/AppStream/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-AppStream
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-BaseOS nju repository
+      yum_repository:
+        name: baseos
+        description: Rocky Linux $releasever - BaseOS
+        baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/BaseOS/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-BaseOS
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-Extras nju repository
+      yum_repository:
+        name: extras
+        description: Rocky Linux $releasever - Extras
+        baseurl: https://mirrors.nju.edu.cn/rocky/$releasever/extras/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-Extras
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "nju"
+
+- name: setup aliyun repository
+  block:
+    - name: setup Rocky-AppStream aliyun repository
+      yum_repository:
+        name: appstream
+        description: Rocky Linux $releasever - AppStream
+        baseurl: https://mirrors.aliyun.com/rockylinux/$releasever/AppStream/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-AppStream
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-BaseOS aliyun repository
+      yum_repository:
+        name: baseos
+        description: Rocky Linux $releasever - BaseOS
+        baseurl: https://mirrors.aliyun.com/rockylinux/$releasever/BaseOS/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-BaseOS
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-Extras aliyun repository
+      yum_repository:
+        name: extras
+        description: Rocky Linux $releasever - Extras
+        baseurl: https://mirrors.aliyun.com/rockylinux/$releasever/extras/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-Extras
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "aliyun"
+
+- name: install epel-release
+  dnf:
+    name: epel-release
+    state: present
+  notify: yum makecache
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

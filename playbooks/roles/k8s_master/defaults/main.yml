@@ -1,0 +1,4 @@
+---
+keepalived_interface: "{{ APISERVER_INTERFACE }}"
+keepalived_auth_pass: a2b4e103ee674abdae1ad164381d043c
+keepalived_virtual_ipaddress: "{{ APISERVER_VIP }}/{{ APISERVER_VMASK }} dev {{ APISERVER_INTERFACE }}"

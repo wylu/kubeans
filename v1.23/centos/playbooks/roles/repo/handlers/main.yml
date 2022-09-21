@@ -1,3 +1,0 @@
----
-- name: yum makecache
-  shell: yum clean all && yum makecache

@@ -1,5 +1,0 @@
----
-- name: enable kubelet
-  systemd:
-    enabled: yes
-    name: kubelet

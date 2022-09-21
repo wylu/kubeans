@@ -1,3 +1,0 @@
----
-docker_imagefs_label: docker-images
-docker_imagefs_opts: -L {{ docker_imagefs_label }}

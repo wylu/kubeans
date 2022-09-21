@@ -1,0 +1,59 @@
+---
+# https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#organizing-host-and-group-variables
+
+############################
+# role:prepare
+############################
+NTP_SERVER: "ntpserver.local"
+
+############################
+# role:runtime [docker]
+############################
+DOCKER_VER: "20.10.17"
+REGISTRY_VER: "2.8.1"
+LOCAL_REGISTRY_HOST: "registry.local"
+LOCAL_REGISTRY_PORT: "5000"
+LOCAL_REGISTRY: "{{ LOCAL_REGISTRY_HOST }}:{{ LOCAL_REGISTRY_PORT }}"
+# [docker] 信任的 HTTP 仓库
+INSECURE_REGISTRIES:
+  - "{{ LOCAL_REGISTRY }}"
+
+############################
+# role:kube-master
+############################
+K8S_VER: "1.23.6"
+K8S_IMAGE_REPOSITORY: "registry.aliyuncs.com/google_containers"
+
+# 高可用模式依赖服务
+HAPROXY_VER: "2.1.4"
+KEEPALIVED_VER: "2.0.17"
+
+############################
+# role:kube-worker
+############################
+# 配置为 kube 组件（kubelet,kube-proxy,dockerd等）预留的资源量
+# 数值设置详见 templates/kubelet-config.yaml.j2
+KUBE_RESERVED_ENABLE: "no"
+# k8s 官方不建议草率开启 system-reserved, 除非你基于长期监控，了解系统的资源占用状况；
+# 并且随着系统运行时间，需要适当增加资源预留，数值设置详见 templates/kubelet-config.yaml.j2
+# 系统预留设置基于 4c/8g 虚机，最小化安装系统服务，如果使用高性能物理机可以适当增加预留
+# 另外，集群安装时候 apiserver 等资源占用会短时较大，建议至少预留 1g 内存
+SYS_RESERVED_ENABLE: "no"
+
+############################
+# role:network [calico]
+############################
+CALICO_VER: "3.24.1"
+
+############################
+# role:cluster-addon
+############################
+# helm 自动安装
+HELM_INSTALL: "yes"
+HELM_VER: "3.9.4"
+# metrics-server 自动安装
+METRICES_SERVER_INSTALL: "yes"
+# dashboard 自动安装
+DASHBOARD_INSTALL: "yes"
+DASHBOARD_VER: "2.6.1"
+METRICS_SCRAPER_VER: "1.0.8"

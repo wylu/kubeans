@@ -1,0 +1,21 @@
+---
+# https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calicoctl.yaml
+- name: create calico init config
+  template:
+    src: etc/kubernetes/manifests/calico.yaml.j2
+    dest: /etc/kubernetes/manifests/calico.yaml
+    owner: root
+    group: root
+    mode: 0600
+
+- name: install k8s network plugin
+  shell: kubectl apply -f /etc/kubernetes/manifests/calico.yaml
+
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met
+- name: waiting network ready
+  shell: kubectl get pod -n kube-system -o wide|grep 'calico-node'|awk '{print $3}'
+  register: calico_status
+  until: calico_status.stdout_lines|unique|list == ['Running']
+  retries: 60
+  delay: 60
+  ignore_errors: true

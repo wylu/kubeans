@@ -1,3 +1,0 @@
----
-- name: dnf makecache
-  shell: dnf clean all && dnf makecache

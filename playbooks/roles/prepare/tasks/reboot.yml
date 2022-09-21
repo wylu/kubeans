@@ -1,0 +1,14 @@
+---
+- name: reboot all k8s nodes excluding ansible client
+  reboot:
+    reboot_timeout: 600
+    msg: reboot {{ ansible_host }}
+  run_once: true
+  when: ansible_host != ansible_client_ip
+
+- name: reboot ansible client
+  reboot:
+    reboot_timeout: 600
+    msg: reboot {{ ansible_host }}
+  run_once: true
+  when: ansible_host == ansible_client_ip

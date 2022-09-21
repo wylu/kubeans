@@ -1,8 +1,0 @@
----
-- include_tasks: firewalld.yml
-- include_tasks: hosts.yml
-- include_tasks: selinux.yml
-- include_tasks: utilities.yml
-- include_tasks: sysctl.yml
-- include_tasks: rsyslog.yml
-- include_tasks: logrotate.yml

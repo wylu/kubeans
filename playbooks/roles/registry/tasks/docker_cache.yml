@@ -1,0 +1,31 @@
+---
+- name: check if {{ repository }}:{{ tag }} image is existed
+  # https://unix.stackexchange.com/questions/574500/how-to-add-error-handling-for-ansible-shell-module-with-pipes
+  # https://www.cnblogs.com/didispace/p/12524194.html
+  shell: >-
+    set -o pipefail
+    && docker images --filter=reference='{{ repository }}:{{ tag }}'
+    | tail -n +2
+  register: check_result
+
+- name: pull {{ repository }}:{{ tag }} image
+  block:
+    - name: pull image
+      command: "docker pull {{ repository }}:{{ tag }}"
+      async: 1000
+      poll: 0
+      register: pull_sleeper
+    - name: wait for the image pull to complete
+      async_status:
+        jid: "{{ pull_sleeper.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 120
+      delay: 5
+  when: check_result.stdout == ""
+
+- name: tag {{ repository }}:{{ tag }} image
+  command: "docker tag {{ repository }}:{{ tag }} {{ LOCAL_REGISTRY }}/{{ repository }}:{{ tag }}"
+
+- name: push {{ repository }}:{{ tag }} image to local registry
+  command: "docker push {{ LOCAL_REGISTRY }}/{{ repository }}:{{ tag }}"

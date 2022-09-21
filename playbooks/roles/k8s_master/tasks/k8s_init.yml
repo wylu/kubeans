@@ -1,0 +1,20 @@
+---
+- name: create kubeadm init config
+  template:
+    src: kubeadm-init.conf.j2
+    dest: ~/kubeadm-init.conf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: init k8s using kubeadm
+  shell:
+    cmd: kubeadm init --upload-certs --ignore-preflight-errors="DirAvailable--var-lib-etcd" --config ~/kubeadm-init.conf
+    creates: /etc/kubernetes/admin.conf
+
+- name: create user kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: ~/.kube/config
+    mode: 0600
+    remote_src: yes

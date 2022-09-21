@@ -1,0 +1,9 @@
+---
+- name: yum makecache
+  command: yum makecache
+
+- name: enable kubernetes.slice
+  systemd:
+    state: started
+    enabled: yes
+    name: kubernetes.slice

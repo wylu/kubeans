@@ -1,0 +1,83 @@
+---
+- name: setup docker-ce official repository
+  block:
+    - name: setup centos7 docker-ce official repository
+      command: yum-config-manager --add-repo {{ docker_official_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+    - name: setup rocky8 docker-ce official repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_official_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+  when: docker_repo == "official"
+
+- name: setup docker-ce aliyun repository
+  block:
+    - name: setup centos7 docker-ce aliyun repository
+      command: yum-config-manager --add-repo {{ docker_aliyun_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+    - name: setup rocky8 docker-ce aliyun repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_aliyun_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+  when: docker_repo == "aliyun"
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers
+
+# https://github.com/ansible/ansible/issues/71808
+# https://docs.ansible.com/ansible/2.9/modules/yum_module.html#parameter-name
+- name: install docker-ce
+  yum:
+    name: docker-ce-{{ DOCKER_VER }}
+    state: present
+  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_async.html
+  # https://stackoverflow.com/questions/41194021/how-can-i-show-progress-for-a-long-running-ansible-task
+  async: 3000
+  poll: 0
+  register: yum_sleeper
+  notify: restart and enable docker
+
+- name: whether docker has completed the installation
+  async_status:
+    jid: "{{ yum_sleeper.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 60
+  delay: 10
+
+- name: create docker config directory
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: create docker config
+  template:
+    # https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0600
+  notify: restart and enable docker
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers
+
+- name: setup {{ LOCAL_REGISTRY_HOST }} hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: "{{ LOCAL_REGISTRY_HOST }}$"
+    line: "{{ hostvars[groups.k8s_master.0]['ansible_host'] }} {{ LOCAL_REGISTRY_HOST }}"
+    insertafter: EOF

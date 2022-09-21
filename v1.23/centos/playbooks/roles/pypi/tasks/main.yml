@@ -1,6 +1,0 @@
----
-- include_tasks: official_source.yml
-  when: pypi_source == "official"
-
-- include_tasks: tuna_source.yml
-  when: pypi_source == "tuna"

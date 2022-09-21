@@ -1,0 +1,7 @@
+---
+- import_playbook: 01.prepare.yml
+- import_playbook: 02.runtime.yml
+- import_playbook: 03.k8s_master.yml
+- import_playbook: 04.k8s_worker.yml
+- import_playbook: 05.network.yml
+- import_playbook: 06.k8s_addon.yml

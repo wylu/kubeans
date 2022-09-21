@@ -1,0 +1,28 @@
+---
+- hosts: k8s_master
+  any_errors_fatal: true
+  roles:
+    - role: k8s_common
+      tags: k8s_common
+      vars:
+        k8s_repo: aliyun
+    - role: k8s_master
+      tags: k8s_master
+      vars:
+        k8s_preflight: true
+
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  roles:
+    - role: k8s_master
+      tags: k8s_master
+      vars:
+        k8s_init: true
+
+- hosts: k8s_master[1:]
+  any_errors_fatal: true
+  roles:
+    - role: k8s_master
+      tags: k8s_master
+      vars:
+        k8s_join: true

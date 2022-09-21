@@ -1,5 +1,0 @@
----
-helm_enable: true
-helm_version: 3.9.4
-
-dashboard_enbale: true

@@ -1,0 +1,74 @@
+---
+# https://stackoverflow.com/questions/62211899/what-is-docker-image-reference
+# https://docs.docker.com/engine/reference/commandline/images/
+- name: check if registry:{{ REGISTRY_VER }} image is existed
+  # https://unix.stackexchange.com/questions/574500/how-to-add-error-handling-for-ansible-shell-module-with-pipes
+  # https://www.cnblogs.com/didispace/p/12524194.html
+  shell: >-
+    set -o pipefail
+    && docker images --filter=reference='registry:{{ REGISTRY_VER }}'
+    | tail -n +2
+  register: check_result
+
+# https://hub.docker.com/_/registry
+# https://yeasy.gitbook.io/docker_practice/repository/registry
+- name: pull registry:{{ REGISTRY_VER }} image
+  block:
+    - name: pull image
+      command: "docker pull registry:{{ REGISTRY_VER }}"
+      async: 3000
+      poll: 0
+      register: pull_sleeper
+    - name: wait for the image pull to complete
+      async_status:
+        jid: "{{ pull_sleeper.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 60
+      delay: 10
+  when: check_result.stdout == ""
+
+- name: create local registry data directory
+  file:
+    path: /opt/data/registry
+    state: directory
+
+- name: check if local registry is running
+  # https://unix.stackexchange.com/questions/574500/how-to-add-error-handling-for-ansible-shell-module-with-pipes
+  # https://www.cnblogs.com/didispace/p/12524194.html
+  shell: >-
+    set -o pipefail
+    && docker ps --filter name=registry
+    | tail -n +2
+  register: check_result
+
+- name: run local registry
+  shell: |-
+    docker run -d \
+        --name registry \
+        --publish 5000:5000 \
+        --restart always \
+        --volume /opt/data/registry:/var/lib/registry \
+        registry:{{ REGISTRY_VER }}
+  when: check_result.stdout == ""
+
+- name: pull images and push to local registry
+  include_tasks: docker_cache.yml
+  vars:
+    repository: "{{ item.repository }}"
+    tag: "{{ item.tag }}"
+  with_items:
+    - repository: haproxy
+      tag: "{{ HAPROXY_VER }}"
+    - repository: osixia/keepalived
+      tag: "{{ KEEPALIVED_VER }}"
+    - repository: calico/cni
+      tag: "v{{ CALICO_VER }}"
+    - repository: calico/node
+      tag: "v{{ CALICO_VER }}"
+    - repository: calico/kube-controllers
+      tag: "v{{ CALICO_VER }}"
+    - repository: kubernetesui/dashboard
+      tag: "v{{ DASHBOARD_VER }}"
+    - repository: kubernetesui/metrics-scraper
+      tag: "v{{ METRICS_SCRAPER_VER }}"

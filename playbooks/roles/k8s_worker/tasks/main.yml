@@ -1,0 +1,8 @@
+---
+- include_tasks: k8s_preflight.yml
+  tags: preflight
+  when: k8s_preflight|default(false, true)|bool
+
+- include_tasks: k8s_join.yml
+  tags: join
+  when: k8s_join|default(false, true)|bool

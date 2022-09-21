@@ -1,0 +1,26 @@
+---
+- name: create haproxy config directory
+  file:
+    path: /etc/haproxy
+    state: directory
+    owner: root
+    group: root
+
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html
+# https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
+# http://docs.haproxy.org/2.1/configuration.html
+- name: create haproxy config
+  template:
+    src: etc/haproxy/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: 0600
+
+- name: create haproxy static pod
+  template:
+    src: etc/kubernetes/manifests/haproxy.yaml.j2
+    dest: /etc/kubernetes/manifests/haproxy.yaml
+    owner: root
+    group: root
+    mode: 0600

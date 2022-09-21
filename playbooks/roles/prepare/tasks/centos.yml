@@ -1,0 +1,82 @@
+---
+- include_tasks: centos_partition.yml
+  tags: partition
+  vars:
+    root_partiton: |-
+      {%- set root_partiton = '' -%}
+      {%- if ansible_facts['distribution_major_version'] == '7' -%}
+        {% set root_partiton = 'centos-root' %}
+      {%- elif ansible_facts['distribution_major_version'] == '8' -%}
+        {% set root_partiton = 'rl-root' %}
+      {%- endif -%}
+      {{ root_partiton }}
+    home_partiton: |-
+      {%- set home_partiton = '' -%}
+      {%- if ansible_facts['distribution_major_version'] == '7' -%}
+        {% set home_partiton = 'centos-home' %}
+      {%- elif ansible_facts['distribution_major_version'] == '8' -%}
+        {% set home_partiton = 'rl-home' %}
+      {%- endif -%}
+      {{ home_partiton }}
+    swap_partiton: |-
+      {%- set swap_partiton = '' -%}
+      {%- if ansible_facts['distribution_major_version'] == '7' -%}
+        {% set swap_partiton = 'centos-swap' %}
+      {%- elif ansible_facts['distribution_major_version'] == '8' -%}
+        {% set swap_partiton = 'rl-swap' %}
+      {%- endif -%}
+      {{ swap_partiton }}
+
+- include_tasks: centos7_repo.yml
+  tags: repo
+  vars:
+    repo_mirrors: tuna
+  when:
+    - ansible_facts["distribution"] == "CentOS"
+    - ansible_facts["distribution_major_version"] == "7"
+
+- include_tasks: rocky8_repo.yml
+  tags: repo
+  vars:
+    repo_mirrors: nju
+  when:
+    - ansible_facts["distribution"] == "Rocky"
+    - ansible_facts["distribution_major_version"] == "8"
+
+- include_tasks: centos_base.yml
+  tags: base
+
+- include_tasks: centos_pypi.yml
+  tags: pypi
+  vars:
+    pypi_source: tuna
+
+- name: setup ntp
+  tags: ntp
+  block:
+    - include_tasks: centos_chrony.yml
+      vars:
+        ntp_servers: []
+        ntp_pools:
+          - 2.centos.pool.ntp.org iburst
+      when: inventory_hostname in groups.ntp_server
+    - name: setup {{ NTP_SERVER }} hosts
+      vars:
+        ips: |-
+          {%- set ips = [] -%}
+          {%- for host in groups['ntp_server'] -%}
+            {{ ips.append(hostvars[host]['ansible_host']) }}
+          {%- endfor -%}
+          {{ ips|unique }}
+      lineinfile:
+        path: /etc/hosts
+        regexp: "{{ NTP_SERVER }}$"
+        line: "{{ item }} {{ NTP_SERVER }}"
+        insertafter: EOF
+      with_items: "{{ ips }}"
+    - include_tasks: centos_chrony.yml
+      vars:
+        ntp_servers:
+          - "{{ NTP_SERVER }} iburst"
+        ntp_pools: []
+      when: inventory_hostname not in groups.ntp_server

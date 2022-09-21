@@ -1,6 +1,0 @@
----
-- name: setup rsyslog
-  yum:
-    name: rsyslog
-    state: latest
-  notify: restart rsyslog

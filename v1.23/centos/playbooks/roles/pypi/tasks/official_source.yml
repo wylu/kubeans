@@ -1,5 +1,0 @@
----
-- name: setup official pypi source
-  file:
-    path: ~/.config/pip
-    state: absent

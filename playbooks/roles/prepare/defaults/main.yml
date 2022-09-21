@@ -1,0 +1,12 @@
+---
+centos7_utilities:
+  - bash-completion
+  - openssh
+  - python36
+  # - java-11-openjdk
+  - yum-utils
+
+rocky8_utilities:
+  - openssh
+  - python38
+  # - java-11-openjdk
