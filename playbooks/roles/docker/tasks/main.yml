@@ -37,7 +37,7 @@
   meta: flush_handlers
 
 # https://github.com/ansible/ansible/issues/71808
-# https://docs.ansible.com/ansible/2.9/modules/yum_module.html#parameter-name
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
 - name: install docker-ce
   yum:
     name: docker-ce-{{ DOCKER_VER }}

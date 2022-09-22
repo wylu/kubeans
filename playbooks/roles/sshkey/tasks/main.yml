@@ -14,7 +14,7 @@
     size: 2048
 
 - name: cat pub key
-  shell: cat ~/.ssh/id_rsa.pub
+  command: cat ~/.ssh/id_rsa.pub
   register: internal_key_result
 
 - name: set fact pub key

@@ -1,9 +1,13 @@
 ---
 - name: yum clean all
-  command: yum clean all
+  command:
+    cmd: yum clean all
+    warn: false
 
 - name: yum makecache
-  command: yum makecache
+  command:
+    cmd: yum makecache
+    warn: false
 
 - name: reload sysctl
   command: sysctl --system

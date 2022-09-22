@@ -5,6 +5,7 @@
     url: "https://get.helm.sh/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
     dest: "~/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
     checksum: "sha256:https://get.helm.sh/helm-v{{ HELM_VER }}-linux-amd64.tar.gz.sha256sum"
+  run_once: true
   # http://willthames.github.io/2018/07/01/connection-local-vs-delegate_to-localhost.html
   # connection: local
   # https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html

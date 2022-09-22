@@ -1,21 +1,12 @@
 ---
 - name: generate k8s certificate-key
-  shell: |-
-    set -o pipefail &&
-    kubeadm init phase upload-certs \
-      --upload-certs \
-      --skip-headers \
-      --skip-log-headers |
-      tail -n 1
+  shell: set -o pipefail && kubeadm init phase upload-certs --upload-certs --skip-headers --skip-log-headers|tail -n 1
   register: k8s_certificate_key
   run_once: true
+  delegate_to: "{{ groups.k8s_master.0 }}"
 
-- name: generate k8s join command
-  shell: |-
-    kubeadm token create \
-      --ttl 5m \
-      --print-join-command \
-      --certificate-key {{ k8s_certificate_key.stdout }}
+- name: generate k8s master join command
+  shell: kubeadm token create --ttl 5m --print-join-command --certificate-key {{ k8s_certificate_key.stdout }}
   register: k8s_master_join_result
   run_once: true
   delegate_to: "{{ groups.k8s_master.0 }}"
@@ -26,9 +17,7 @@
 
 - name: join k8s master
   shell:
-    cmd: >-
-      {{ k8s_master_join_cmd }}
-      --ignore-preflight-errors DirAvailable--var-lib-etcd
+    cmd: "{{ k8s_master_join_cmd }} --ignore-preflight-errors DirAvailable--var-lib-etcd"
     creates: /etc/kubernetes/admin.conf
 
 - name: create user kube config

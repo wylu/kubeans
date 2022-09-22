@@ -2,5 +2,6 @@
 docker_official_repo: https://download.docker.com/linux/centos/docker-ce.repo
 docker_aliyun_repo: http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 docker_registry_mirrors:
+  - https://mirror.baidubce.com
   - https://hub-mirror.c.163.com
   - https://docker.mirrors.ustc.edu.cn

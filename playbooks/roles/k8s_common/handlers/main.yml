@@ -1,6 +1,8 @@
 ---
 - name: yum makecache
-  command: yum makecache
+  command:
+    cmd: yum makecache
+    warn: false
 
 - name: enable kubernetes.slice
   systemd:

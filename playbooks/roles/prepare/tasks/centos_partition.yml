@@ -29,5 +29,7 @@
     - name: disable swap partition temporarily
       command: swapoff -a
     - name: disable swap partition permanently
-      shell: sed -i 's/^\/dev\/mapper\/{{ swap_partiton }}/#&/' /etc/fstab
+      shell:
+        cmd: sed -i 's/^\/dev\/mapper\/{{ swap_partiton }}/#&/' /etc/fstab
+        warn: false
   when: swap_info.stdout != "0"
