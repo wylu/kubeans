@@ -13,6 +13,7 @@
 
 - hosts: k8s_master[0]
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: k8s_master
       tags: k8s_master
@@ -21,6 +22,7 @@
 
 - hosts: k8s_master[1:]
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: k8s_master
       tags: k8s_master

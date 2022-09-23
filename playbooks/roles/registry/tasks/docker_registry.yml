@@ -57,7 +57,7 @@
 # Delete one tag from a repo:
 # $ delete_docker_registry_image --image testrepo/awesomeimage:supertag
 #
-- name: copy delete local registry image tool
+- name: copy delete_docker_registry_image tool
   copy:
     src: delete_docker_registry_image.py
     dest: /usr/local/bin/delete_docker_registry_image

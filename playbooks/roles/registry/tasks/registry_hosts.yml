@@ -1,0 +1,21 @@
+---
+- set_fact:
+    local_registry_server: |-
+      {%- set local_registry_server = hostvars[groups.k8s_master.0]['ansible_host'] -%}
+      {%- if 'local_registry_server' in groups and groups.local_registry_server|length > 0 -%}
+        {% set local_registry_server = hostvars[groups.local_registry_server.0]['ansible_host'] %}
+      {%- endif -%}
+      {{ local_registry_server }}
+  run_once: true
+
+- name: show local_registry_server
+  debug:
+    msg: "{{ local_registry_server }}"
+  run_once: true
+
+- name: setup {{ LOCAL_REGISTRY_HOST }} hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: "{{ LOCAL_REGISTRY_HOST }}$"
+    line: "{{ local_registry_server }} {{ LOCAL_REGISTRY_HOST }}"
+    insertafter: EOF

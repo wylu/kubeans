@@ -1,6 +1,7 @@
 ---
 - hosts: k8s_master
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: k8s_addon
       tags: k8s_addon
@@ -9,6 +10,7 @@
 
 - hosts: k8s_master[0]
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: k8s_addon
       tags: k8s_addon

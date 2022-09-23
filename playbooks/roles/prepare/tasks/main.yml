@@ -1,4 +1,6 @@
 ---
+- include_tasks: check.yml
+
 - include_tasks: centos.yml
   when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
 

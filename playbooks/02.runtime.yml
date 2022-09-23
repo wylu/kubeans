@@ -8,8 +8,36 @@
         docker_repo: aliyun
       when: CONTAINER_RUNTIME == "docker"
 
-- hosts: k8s_master[0]
+# https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
+- hosts: k8s:local_registry_server
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: registry
       tags: registry
+      vars:
+        setup: hosts
+
+# use an external existing local registry server
+- hosts: local_registry_server
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: registry
+      tags: registry
+      vars:
+        setup: cache
+      when: ('local_registry_server' in groups)
+        and (groups.local_registry_server|length > 0)
+
+# make k8s_master[0] as a local registry server
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: registry
+      tags: registry
+      vars:
+        setup: cache
+      when: ('local_registry_server' not in groups)
+        or (groups.local_registry_server|length == 0)

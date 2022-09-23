@@ -74,10 +74,3 @@
 
 - name: Force all notified handlers to run at this point, not waiting for normal sync points
   meta: flush_handlers
-
-- name: setup {{ LOCAL_REGISTRY_HOST }} hosts
-  lineinfile:
-    path: /etc/hosts
-    regexp: "{{ LOCAL_REGISTRY_HOST }}$"
-    line: "{{ hostvars[groups.k8s_master.0]['ansible_host'] }} {{ LOCAL_REGISTRY_HOST }}"
-    insertafter: EOF

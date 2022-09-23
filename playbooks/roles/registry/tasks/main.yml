@@ -1,3 +1,6 @@
 ---
+- include_tasks: registry_hosts.yml
+  when: setup == "hosts"
+
 - include_tasks: docker_registry.yml
-  when: CONTAINER_RUNTIME == "docker"
+  when: setup == "cache" and CONTAINER_RUNTIME == "docker"

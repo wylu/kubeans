@@ -1,6 +1,7 @@
 ---
 - hosts: k8s_master[0]
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: calico
       tags: calico

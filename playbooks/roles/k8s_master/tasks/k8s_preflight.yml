@@ -1,12 +1,4 @@
 ---
-- name: check kubernetes ha mode
-  assert:
-    that:
-      - HA_ENABLE == "yes"
-    fail_msg: 'HA_ENABLE="yes" must be set for ha mode'
-  # https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
-  when: ansible_play_hosts_all|length > 1
-
 - name: install kubernetes packages
   yum:
     name:

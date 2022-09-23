@@ -1,6 +1,7 @@
 ---
 - hosts: k8s_worker
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: k8s_common
       tags: k8s_common
