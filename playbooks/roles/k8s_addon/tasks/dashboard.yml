@@ -25,9 +25,9 @@
 
 - name: get admin-user access token
   vars:
-    # host: "{{ groups['k8s_master'][0] }}"
-    host: "{{ groups.k8s_master.0 }}"
-    address: "https://{{ APISERVER_VIP|default(hostvars[host]['ansible_host'], true) }}:30443/"
+    # vip: "{{ hostvars[groups['k8s_master'][0]]['ansible_host'] }}"
+    vip: "{{ hostvars[groups.k8s_master.0]['ansible_host'] }}"
+    address: "https://{{ (HA_ENABLE == 'yes')|ternary(APISERVER_VIP, vip) }}:30443/"
   debug:
     msg:
       - "Dashboard listen on {{ address }}"

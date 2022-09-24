@@ -39,8 +39,8 @@
     # http://jinja.quantprogramming.com/
     hosts: |-
       {%- set hosts = [] -%}
-      {%- for host in groups['all'] -%}
-        {{ hosts.append(hostvars[host]['internal_pub_key'] | trim) }}
+      {%- for host in ansible_play_hosts_all -%}
+        {{ hosts.append(hostvars[host]['internal_pub_key']|trim) }}
       {%- endfor -%}
       {{ hosts }}
   # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html

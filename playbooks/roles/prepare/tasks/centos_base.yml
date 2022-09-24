@@ -22,7 +22,7 @@
     path: /etc/hosts
     regexp: "{{ item.host }}$"
     line: "{{ item.ip }} {{ item.host }}"
-    insertbefore: BOF
+    insertafter: EOF
   with_items: "{{ hosts }}"
 
 - name: disable selinux

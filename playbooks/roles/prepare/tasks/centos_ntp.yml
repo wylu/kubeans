@@ -1,0 +1,22 @@
+---
+- include_tasks: centos_chrony.yml
+  vars:
+    ntp_servers: []
+    ntp_pools:
+      - 2.centos.pool.ntp.org iburst
+  when: inventory_hostname == groups.k8s_master.0
+
+- name: setup {{ NTP_HOST }} hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: "{{ NTP_HOST }}$"
+    line: "{{ hostvars[groups.k8s_master.0]['ansible_host'] }} {{ NTP_HOST }}"
+    insertafter: EOF
+  when: inventory_hostname != groups.k8s_master.0
+
+- include_tasks: centos_chrony.yml
+  vars:
+    ntp_servers:
+      - "{{ NTP_HOST }} iburst"
+    ntp_pools: []
+  when: inventory_hostname != groups.k8s_master.0

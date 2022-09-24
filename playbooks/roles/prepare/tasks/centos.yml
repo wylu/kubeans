@@ -51,32 +51,5 @@
   vars:
     pypi_source: tuna
 
-- name: setup ntp
+- include_tasks: centos_ntp.yml
   tags: ntp
-  block:
-    - include_tasks: centos_chrony.yml
-      vars:
-        ntp_servers: []
-        ntp_pools:
-          - 2.centos.pool.ntp.org iburst
-      when: inventory_hostname in groups.ntp_server
-    - name: setup {{ NTP_SERVER }} hosts
-      vars:
-        ips: |-
-          {%- set ips = [] -%}
-          {%- for host in groups['ntp_server'] -%}
-            {{ ips.append(hostvars[host]['ansible_host']) }}
-          {%- endfor -%}
-          {{ ips|unique }}
-      lineinfile:
-        path: /etc/hosts
-        regexp: "{{ NTP_SERVER }}$"
-        line: "{{ item }} {{ NTP_SERVER }}"
-        insertafter: EOF
-      with_items: "{{ ips }}"
-    - include_tasks: centos_chrony.yml
-      vars:
-        ntp_servers:
-          - "{{ NTP_SERVER }} iburst"
-        ntp_pools: []
-      when: inventory_hostname not in groups.ntp_server

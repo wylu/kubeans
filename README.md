@@ -34,20 +34,22 @@
 
 示例：
 
-| Role           |   Host   |       IP       |    K8S |
-| :------------- | :------: | :------------: | -----: |
-| ansible_client | client00 | 10.128.170.230 |        |
-| ntp_server     | master01 | 10.128.170.231 | 1.23.6 |
-| k8s_master     | master01 | 10.128.170.231 | 1.23.6 |
-| k8s_master     | master02 | 10.128.170.232 | 1.23.6 |
-| k8s_master     | master03 | 10.128.170.233 | 1.23.6 |
-| k8s_worker     | worker01 | 10.128.170.21  | 1.23.6 |
-| k8s_worker     | worker02 | 10.128.170.22  | 1.23.6 |
-| k8s_worker     | worker03 | 10.128.170.23  | 1.23.6 |
+| Role                  |   Host   |       IP       |    K8S |
+| :-------------------- | :------: | :------------: | -----: |
+| ansible_client        | client00 | 10.128.170.230 |        |
+| k8s_master            | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master            | master02 | 10.128.170.232 | 1.23.6 |
+| k8s_master            | master03 | 10.128.170.233 | 1.23.6 |
+| k8s_worker            | worker01 | 10.128.170.21  | 1.23.6 |
+| k8s_worker            | worker02 | 10.128.170.22  | 1.23.6 |
+| k8s_worker            | worker03 | 10.128.170.23  | 1.23.6 |
+| local_registry_server | registry | 10.128.170.235 |        |
 
 ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令。
 
 **注意：在 k8s_master 节点上执行部署命令时，需要将 hosts.ini 文件中的 ansible_client 节点注释掉。**
+
+local_registry_server 是本地镜像仓库节点，如果想要使用已有的本地镜像仓库，可以在清单文件中指定。
 
 ## 支持系统
 

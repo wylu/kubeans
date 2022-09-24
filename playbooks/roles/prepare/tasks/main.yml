@@ -8,3 +8,4 @@
   vars:
     # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
     ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split()|first }}"
+  when: REBOOT == "yes"

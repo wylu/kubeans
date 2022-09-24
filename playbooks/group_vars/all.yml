@@ -4,7 +4,7 @@
 ############################
 # role:prepare
 ############################
-NTP_SERVER: "ntpserver.local"
+NTP_HOST: "ntp.local"
 
 ############################
 # role:runtime [docker]
