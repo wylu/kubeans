@@ -28,7 +28,6 @@
     - [关闭 swap](#关闭-swap)
     - [合并 /home 分区到 / 分区](#合并-home-分区到--分区)
     - [systemd 资源控制](#systemd-资源控制)
-  - [References](#references)
 
 ## 机器规划
 
@@ -552,7 +551,3 @@ sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
                │ └─1745 /usr/sbin/rsyslogd -n
                ...
   ```
-
-## References
-
-[https://github.com/ralish/bash-script-template](https://github.com/ralish/bash-script-template)

@@ -10,7 +10,7 @@ VERBOSE=false
 CURRENT=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # ansible 清单文件路径
 # https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
-HOSTS=$CURRENT/hosts.ini
+INVENTORY=$CURRENT/hosts.ini
 # ssh 连接密码
 SSH_PASSWORD=
 
@@ -152,7 +152,7 @@ function setup_sshkey() {
 
     spawn ansible-playbook -k \
     --ssh-common-args "-o StrictHostKeyChecking=no" \
-    -i $env(hosts) \
+    -i $env(inventory) \
     $env(current)/playbooks/00.sshkey.yml
 
     expect "SSH password:" {send "$env(ssh_password)\n"}
@@ -170,7 +170,7 @@ function setup_sshkey() {
     local idx=0
     local retries=3
     while true; do
-        current="$CURRENT" ssh_password="$SSH_PASSWORD" hosts="$HOSTS" \
+        current="$CURRENT" ssh_password="$SSH_PASSWORD" inventory="$INVENTORY" \
             expect -c "$command"
 
         # shellcheck disable=SC2181
@@ -200,6 +200,14 @@ function setup_sshkey() {
     logger info "************************ Setup sshkey End ***********************"
 }
 
+function varify_inventory() {
+    local inventory=$1
+    if [[ -z "${inventory}" ]]; then
+        logger error '"INVENTORY" can not be empty!'
+        exit 1
+    fi
+}
+
 function varify_ssh_password() {
     local ssh_password=$1
     if [[ -z "${ssh_password}" ]]; then
@@ -217,7 +225,12 @@ Usage:
     ${BASH_SOURCE[0]} --ssh-password "root password"
 
       -h|--help                             Displays this help
+    
+    Optional:
       -v|--verbose                          Displays verbose output
+      -i|--inventory                        Specify inventory host path
+
+    Required:
          --ssh-password SSH_PASSWORD        SSH password of root user
 EOF
 }
@@ -237,6 +250,11 @@ function parse_params() {
             ;;
         -v | --verbose)
             VERBOSE=true
+            ;;
+        -i | --inventory)
+            INVENTORY="${1-}"
+            varify_inventory "$INVENTORY"
+            shift
             ;;
         --ssh-password)
             # https://unix.stackexchange.com/questions/463034/bash-throws-error-line-8-1-unbound-variable
