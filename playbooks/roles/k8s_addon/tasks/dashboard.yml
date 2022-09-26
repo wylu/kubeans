@@ -1,19 +1,19 @@
 ---
 - name: prepare dashboard directory
   file:
-    name: /etc/kubernetes/manifests/addon/dashboard
+    name: ~/kubernetes/addon/dashboard
     state: directory
 
 - name: prepare dashboard deployment file
   template:
     src: dashboard/{{ item }}.j2
-    dest: /etc/kubernetes/manifests/addon/dashboard/{{ item }}
+    dest: ~/kubernetes/addon/dashboard/{{ item }}
   with_items:
     - kubernetes-dashboard.yaml
     - admin-user-sa-rbac.yaml
 
 - name: apply dashboard deployment
-  shell: kubectl apply -f /etc/kubernetes/manifests/addon/dashboard/
+  shell: kubectl apply -f ~/kubernetes/addon/dashboard/
 
 - name: waiting dashboard ready
   shell: set -o pipefail && kubectl get pod -n kubernetes-dashboard|tail -n +2|awk '{print $3}'

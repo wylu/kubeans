@@ -1,16 +1,16 @@
 ---
 - name: prepare metrics server directory
   file:
-    name: /etc/kubernetes/manifests/addon/metrics_server
+    name: ~/kubernetes/addon/metrics_server
     state: directory
 
 - name: prepare metrics server deployment file
   template:
     src: metrics_server/components.yaml.j2
-    dest: /etc/kubernetes/manifests/addon/metrics_server/components.yaml
+    dest: ~/kubernetes/addon/metrics_server/components.yaml
 
 - name: apply metrics server deployment
-  shell: kubectl apply -f /etc/kubernetes/manifests/addon/metrics_server/
+  shell: kubectl apply -f ~/kubernetes/addon/metrics_server/
 
 - name: waiting metrics server ready
   shell: set -o pipefail && kubectl -n kube-system get pod|grep metrics-server|awk '{print $3}'

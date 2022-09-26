@@ -1,15 +1,20 @@
 ---
+- name: prepare network directory
+  file:
+    name: ~/kubernetes/network
+    state: directory
+
 # https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calicoctl.yaml
 - name: create calico init config
   template:
-    src: etc/kubernetes/manifests/calico.yaml.j2
-    dest: /etc/kubernetes/manifests/calico.yaml
+    src: calico.yaml.j2
+    dest: ~/kubernetes/network/calico.yaml
     owner: root
     group: root
     mode: 0600
 
 - name: install k8s network plugin
-  shell: kubectl apply -f /etc/kubernetes/manifests/calico.yaml
+  shell: kubectl apply -f ~/kubernetes/network/calico.yaml
 
 # https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met
 - name: waiting network ready

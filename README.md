@@ -1,6 +1,6 @@
 # ansible 部署 kubernetes
 
-使用 ansible 部署 kebernetes 版本集群
+使用 ansible 部署 kebernetes 集群
 
 - [ansible 部署 kubernetes](#ansible-部署-kubernetes)
   - [机器规划](#机器规划)
