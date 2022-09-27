@@ -18,3 +18,7 @@
   shell:
     cmd: "{{ k8s_worker_join_cmd }}"
     creates: /etc/kubernetes/kubelet.conf
+
+- name: set "worker" label for the node
+  command: kubectl label --overwrite nodes {{ inventory_hostname }} node-role.kubernetes.io/worker=
+  delegate_to: "{{ groups.k8s_master.0 }}"
