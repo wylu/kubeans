@@ -6,7 +6,7 @@
 
 - name: prepare dashboard deployment file
   template:
-    src: dashboard/{{ item }}.j2
+    src: "{{ item }}.j2"
     dest: ~/kubernetes/addon/dashboard/{{ item }}
   with_items:
     - kubernetes-dashboard.yaml

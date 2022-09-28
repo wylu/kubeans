@@ -1,5 +1,5 @@
 ---
-- include_tasks: centos_partition.yml
+- include_tasks: partition.yml
   tags: partition
   vars:
     root_partiton: |-
@@ -27,7 +27,7 @@
       {%- endif -%}
       {{ swap_partiton }}
 
-- include_tasks: centos7_repo.yml
+- include_tasks: repo_centos7.yml
   tags: repo
   vars:
     repo_mirrors: tuna
@@ -35,7 +35,7 @@
     - ansible_facts["distribution"] == "CentOS"
     - ansible_facts["distribution_major_version"] == "7"
 
-- include_tasks: rocky8_repo.yml
+- include_tasks: repo_rocky8.yml
   tags: repo
   vars:
     repo_mirrors: nju
@@ -43,13 +43,13 @@
     - ansible_facts["distribution"] == "Rocky"
     - ansible_facts["distribution_major_version"] == "8"
 
-- include_tasks: centos_base.yml
+- include_tasks: base.yml
   tags: base
 
-- include_tasks: centos_pypi.yml
+- include_tasks: pypi.yml
   tags: pypi
   vars:
     pypi_source: tuna
 
-- include_tasks: centos_ntp.yml
+- include_tasks: ntp.yml
   tags: ntp

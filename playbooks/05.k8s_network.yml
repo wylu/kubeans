@@ -3,6 +3,6 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: calico
+    - role: k8s_network/calico
       tags: calico
       when: CLUSTER_NETWORK == "calico"

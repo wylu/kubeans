@@ -2,10 +2,10 @@
 - hosts: k8s
   any_errors_fatal: true
   roles:
-    - role: docker
+    - role: runtime/docker
       tags: docker
       vars:
-        docker_repo: aliyun
+        docker_repo: tuna
       when: CONTAINER_RUNTIME == "docker"
 
 # https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
@@ -13,7 +13,7 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: registry
+    - role: runtime/registry
       tags: registry
       vars:
         setup: hosts
@@ -23,7 +23,7 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: registry
+    - role: runtime/registry
       tags: registry
       vars:
         setup: cache
@@ -35,7 +35,7 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: registry
+    - role: runtime/registry
       tags: registry
       vars:
         setup: cache

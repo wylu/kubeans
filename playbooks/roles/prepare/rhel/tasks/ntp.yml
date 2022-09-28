@@ -1,5 +1,5 @@
 ---
-- include_tasks: centos_chrony.yml
+- include_tasks: chrony.yml
   vars:
     ntp_servers: []
     ntp_pools:
@@ -14,7 +14,7 @@
     insertafter: EOF
   when: inventory_hostname != groups.k8s_master.0
 
-- include_tasks: centos_chrony.yml
+- include_tasks: chrony.yml
   vars:
     ntp_servers:
       - "{{ NTP_HOST }} iburst"

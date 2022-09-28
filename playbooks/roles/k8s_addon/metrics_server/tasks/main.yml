@@ -6,7 +6,7 @@
 
 - name: prepare metrics server deployment file
   template:
-    src: metrics_server/components.yaml.j2
+    src: components.yaml.j2
     dest: ~/kubernetes/addon/metrics_server/components.yaml
 
 - name: apply metrics server deployment

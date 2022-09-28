@@ -189,7 +189,7 @@ ansible-playbook -i hosts.ini playbooks/02.runtime.yml
 - 安装 k8s network
 
   ```shell
-  ansible-playbook -i hosts.ini playbooks/05.network.yml
+  ansible-playbook -i hosts.ini playbooks/05.k8s_network.yml
   ```
 
 - 安装 k8s addon

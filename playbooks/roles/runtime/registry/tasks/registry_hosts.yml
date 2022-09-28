@@ -1,5 +1,6 @@
 ---
-- set_fact:
+- name: set_fact local_registry_server
+  set_fact:
     local_registry_server: |-
       {%- set local_registry_server = hostvars[groups.k8s_master.0]['ansible_host'] -%}
       {%- if 'local_registry_server' in groups and groups.local_registry_server|length > 0 -%}

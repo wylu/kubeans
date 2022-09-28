@@ -3,20 +3,17 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: k8s_addon
+    - role: k8s_addon/helm
       tags: k8s_addon
-      vars:
-        addon: helm
+      when: HELM_ENABLE == "yes"
 
 - hosts: k8s_master[0]
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: k8s_addon
+    - role: k8s_addon/metrics_server
       tags: k8s_addon
-      vars:
-        addon: metrics_server
-    - role: k8s_addon
+      when: METRICES_SERVER_ENABLE == "yes"
+    - role: k8s_addon/dashboard
       tags: k8s_addon
-      vars:
-        addon: dashboard
+      when: DASHBOARD_ENABLE == "yes"

@@ -5,8 +5,10 @@ centos7_utilities:
   - python36
   # - java-11-openjdk
   - yum-utils
+  - ipvsadm
 
 rocky8_utilities:
   - openssh
   - python38
   # - java-11-openjdk
+  - ipvsadm

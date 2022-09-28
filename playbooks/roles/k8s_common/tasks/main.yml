@@ -27,6 +27,19 @@
   notify: yum makecache
   when: k8s_repo == "aliyun"
 
+# https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/
+- name: setup tuna kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://mirrors.tuna.tsinghua.edu.cn/kubernetes/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: no
+    enabled: yes
+    file: kubernetes
+    state: present
+  notify: yum makecache
+  when: k8s_repo == "tuna"
+
 # http://www.jinbuguo.com/systemd/systemd.slice.html
 # http://www.jinbuguo.com/systemd/systemd.resource-control.html
 # http://www.jinbuguo.com/systemd/systemd.unit.html
@@ -39,3 +52,6 @@
     src: system
     dest: /etc/systemd
   notify: enable kubernetes.slice
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

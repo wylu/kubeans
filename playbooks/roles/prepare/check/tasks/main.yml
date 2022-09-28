@@ -20,5 +20,3 @@
         fail_msg: 'HA_ENABLE="no" must be set for non high availability mode'
       # https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
       when: groups.k8s_master|length == 1
-  run_once: true
-  delegate_to: localhost
