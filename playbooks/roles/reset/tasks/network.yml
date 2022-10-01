@@ -1,0 +1,27 @@
+---
+- name: cleanup iptables
+  shell: iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
+
+- name: flush iptables
+  iptables:
+    table: "{{ item }}"
+    flush: yes
+  with_items:
+    - filter
+    - nat
+    - mangle
+
+- name: cleanup ipvsadm
+  command: ipvsadm -C
+
+- name: delete virtual network interface
+  shell: ip link del {{ item }} || true
+  with_items:
+    - docker0
+    - tunl0
+    - kube-ipvs0
+# - name: remove added hosts information
+#   blockinfile:
+#     path: /etc/hosts
+#     state: absent
+#     marker: "# Ansible inventory hosts {mark}"

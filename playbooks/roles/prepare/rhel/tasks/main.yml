@@ -38,7 +38,7 @@
 - include_tasks: repo_rocky8.yml
   tags: repo
   vars:
-    repo_mirrors: nju
+    repo_mirrors: aliyun
   when:
     - ansible_facts["distribution"] == "Rocky"
     - ansible_facts["distribution_major_version"] == "8"

@@ -1,0 +1,24 @@
+---
+- hosts: k8s
+  any_errors_fatal: true
+  tasks:
+    - name: check nodes
+      assert:
+        that:
+          - nodes is defined
+          - nodes|length > 0
+        fail_msg: 'The extra argument "nodes" can not be empty'
+      run_once: true
+      delegate_to: localhost
+    - set_fact:
+        nodes: "{{ nodes|split(',')|unique }}"
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
+  tags: reset_node
+
+- hosts: k8s
+  any_errors_fatal: true
+  roles:
+    - role: reset
+      when: inventory_hostname in nodes
+  tags: reset_node

@@ -1,0 +1,43 @@
+---
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - name: check nodes
+      assert:
+        that:
+          - nodes is defined
+          - nodes|length > 0
+        fail_msg: 'The extra argument "nodes" can not be empty'
+      run_once: true
+      delegate_to: localhost
+    - name: get all worker nodes in the cluster
+      shell: set -o pipefail && kubectl get node -l 'node-role.kubernetes.io/worker' --no-headers|awk '{print $1}'
+      register: result
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
+    - name: get worker nodes that need to be deleted
+      set_fact:
+        workers: |-
+          {%- set workers = [] -%}
+          {%- set nodes = nodes|split(',')|unique -%}
+          {%- for worker in result.stdout_lines -%}
+            {%- if worker in nodes -%}
+              {{ workers.append(worker) }}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ workers }}
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
+  tags: remove_worker
+
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: remove/worker
+      vars:
+        worker: "{{ item }}"
+      with_items: "{{ workers }}"
+  tags: remove_worker

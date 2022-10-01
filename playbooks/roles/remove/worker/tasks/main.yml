@@ -1,0 +1,12 @@
+---
+- name: "disable worker node: {{ worker }} for scheduling"
+  command: kubectl cordon {{ worker }}
+
+- name: "drain worker node：{{ worker }}"
+  command: kubectl drain {{ worker }} --delete-emptydir-data --force --ignore-daemonsets
+
+- name: 'cancel "worker" label of the node: {{ worker }}'
+  command: kubectl label node {{ worker }} node-role.kubernetes.io/worker-
+
+- name: "delete worker node: {{ worker }}"
+  command: kubectl delete node {{ worker }}

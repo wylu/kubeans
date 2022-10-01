@@ -1,0 +1,63 @@
+---
+- hosts: k8s
+  any_errors_fatal: true
+  tasks:
+    - name: check nodes
+      assert:
+        that:
+          - nodes is defined
+          - nodes|length > 0
+        fail_msg: 'The extra argument "nodes" can not be empty'
+      run_once: true
+      delegate_to: localhost
+    - set_fact:
+        nodes: "{{ nodes|split(',')|unique }}"
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
+  tags: add_worker
+
+- import_playbook: 00.sshkey.yml
+
+- hosts: k8s_worker
+  any_errors_fatal: true
+  roles:
+    - role: prepare/rhel
+      tags: prepare
+      when:
+        - inventory_hostname in nodes
+        - ansible_facts["distribution"] in ["CentOS", "Rocky"]
+    - role: prepare/reboot
+      tags: prepare
+      vars:
+        # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
+        ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split()|first }}"
+      when:
+        - inventory_hostname in nodes
+        - REBOOT == "yes"
+    - role: runtime/docker
+      tags: docker
+      vars:
+        docker_repo: tuna
+      when:
+        - inventory_hostname in nodes
+        - CONTAINER_RUNTIME == "docker"
+    - role: runtime/registry
+      tags: registry
+      vars:
+        setup: hosts
+      when:
+        - inventory_hostname in nodes
+    - role: k8s_common
+      tags: k8s_common
+      vars:
+        k8s_repo: tuna
+      when:
+        - inventory_hostname in nodes
+    - role: k8s_worker
+      tags: k8s_worker
+      vars:
+        k8s_preflight: true
+        k8s_join: true
+      when:
+        - inventory_hostname in nodes
+  tags: add_worker

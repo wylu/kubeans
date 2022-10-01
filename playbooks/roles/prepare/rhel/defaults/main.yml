@@ -1,10 +1,10 @@
 ---
 centos7_utilities:
   - bash-completion
+  - yum-utils
   - openssh
   - python36
   # - java-11-openjdk
-  - yum-utils
   - ipvsadm
 
 rocky8_utilities:

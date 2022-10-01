@@ -17,6 +17,10 @@
       - [设置基础环境](#设置基础环境)
       - [安装容器运行时](#安装容器运行时)
       - [安装 kubernetes](#安装-kubernetes)
+  - [节点管理](#节点管理)
+    - [添加 worker](#添加-worker)
+    - [移除 worker](#移除-worker)
+    - [重置节点](#重置节点)
   - [kubernetes 测试](#kubernetes-测试)
     - [测试域名解析](#测试域名解析)
       - [dig 测试](#dig-测试)
@@ -203,6 +207,43 @@ ansible-playbook -i hosts.ini playbooks/02.runtime.yml
 > ```shell
 > ansible-playbook -i hosts.ini playbooks/80.setup_k8s.yml
 > ```
+
+## 节点管理
+
+### 添加 worker
+
+```shell
+ansible-playbook -i host.ini playbooks/91.add_worker.yml -e nodes=worker03 -e ansible_ssh_pass="password"
+```
+
+参数：
+
+- `-e nodes`: 指定要添加的 worker 节点，对应清单中的 hostname，支持指定多个 worker 节点，指定多个节点时使用英文逗号隔开，如：`-e nodes=worker04,worker05`
+- `-e ansible_ssh_pass`: 该参数是可选的，你可以在清单文件对应节点配置中加上 `ansible_ssh_pass="password"`，或者在执行命令时指定该参数。
+
+### 移除 worker
+
+```shell
+ansible-playbook -i host.ini playbooks/92.remove_worker.yml -e nodes=worker03
+```
+
+参数：
+
+- `-e nodes`: 指定要移除的 worker 节点，对应清单中的 hostname，支持指定多个 worker 节点，指定多个节点时使用英文逗号隔开，如：`-e nodes=worker04,worker05`
+
+**注意：将节点从集群中移除后，你可以根据需要选择是否重置节点，但无论有没有重置节点，你都可以随时再次添加该节点。**
+
+### 重置节点
+
+**注意：重置节点前，需要先将节点从集群中移除。**
+
+```shell
+ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
+```
+
+参数：
+
+- `-e nodes`: 指定要重置的节点，对应清单中的 hostname，支持指定多个节点，指定多个节点时使用英文逗号隔开，如：`-e nodes=worker04,worker05`
 
 ## kubernetes 测试
 

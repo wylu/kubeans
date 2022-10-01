@@ -1,0 +1,13 @@
+---
+- name: populate service facts
+  service_facts:
+
+- include_tasks: k8s.yml
+
+- include_tasks: docker.yml
+  when: CONTAINER_RUNTIME == "docker"
+
+- include_tasks: network.yml
+
+- include_tasks: centos.yml
+  when: ansible_distribution in ['CentOS', 'Rocky']

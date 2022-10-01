@@ -1,0 +1,47 @@
+---
+- set_fact:
+    docker_running: |-
+      {{
+        ("docker.service" in ansible_facts.services) and
+        (ansible_facts.services["docker.service"]["state"] == "running")
+      }}
+
+- name: get docker containers
+  command: docker ps -aq
+  register: docker_containers
+  when: docker_running
+
+- name: stop all docker containers
+  shell: docker stop $(docker ps -aq)
+  register: remove_all_docker_containers
+  until: remove_all_docker_containers.rc == 0
+  retries: 5
+  delay: 5
+  when: docker_running and docker_containers.stdout != ""
+
+- name: cleanup docker data
+  command: docker system prune -a -f --volumes
+  register: remove_all_docker_data
+  until: remove_all_docker_data.rc == 0
+  retries: 5
+  delay: 5
+  when: docker_running
+
+- name: stop docker service
+  service:
+    name: docker
+    state: stopped
+    enabled: no
+  when: docker_running
+
+- name: collect docker mounted directories
+  shell: mount|grep docker|awk '{print $3}'|tac
+  register: docker_mounted_dirs
+
+- name: unmount the directory mounted by docker
+  command: umount -f {{ item }}
+  with_items: "{{ docker_mounted_dirs.stdout_lines }}"
+  register: docker_umount_dir
+  until: docker_umount_dir.rc == 0
+  retries: 5
+  delay: 5

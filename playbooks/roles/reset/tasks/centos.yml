@@ -1,0 +1,19 @@
+---
+- name: uninstall packages
+  yum:
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+      - docker-ce
+    state: absent
+
+- name: reload daemon
+  systemd:
+    daemon_reload: yes
+
+- name: restart network
+  systemd:
+    name: NetworkManager
+    state: restarted
+
