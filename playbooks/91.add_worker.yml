@@ -1,6 +1,7 @@
 ---
 - hosts: k8s
   any_errors_fatal: true
+  gather_facts: false
   tasks:
     - name: check nodes
       assert:
@@ -10,21 +11,41 @@
         fail_msg: 'The extra argument "nodes" can not be empty'
       run_once: true
       delegate_to: localhost
+    - name: get all worker nodes in the cluster
+      shell: >-
+        set -o pipefail &&
+        kubectl get node
+        -l 'node-role.kubernetes.io/worker'
+        --no-headers |
+        awk '{print $1}'
+      register: result
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
     - set_fact:
-        nodes: "{{ nodes|split(',')|unique }}"
+        workers: "{{ result.stdout_lines }}"
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
   tags: add_worker
 
 - import_playbook: 00.sshkey.yml
 
-- hosts: k8s_worker
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: prepare/hosts
+      tags: prepare
+
+- hosts: "{{ nodes }}"
   any_errors_fatal: true
   roles:
-    - role: prepare/rhel
+    - role: prepare/base
+      tags: prepare
+      when: inventory_hostname not in workers
+    - role: prepare/centos
       tags: prepare
       when:
-        - inventory_hostname in nodes
+        - inventory_hostname not in workers
         - ansible_facts["distribution"] in ["CentOS", "Rocky"]
     - role: prepare/reboot
       tags: prepare
@@ -32,32 +53,25 @@
         # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
         ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split()|first }}"
       when:
-        - inventory_hostname in nodes
+        - inventory_hostname not in workers
         - REBOOT == "yes"
     - role: runtime/docker
       tags: docker
-      vars:
-        docker_repo: tuna
       when:
-        - inventory_hostname in nodes
+        - inventory_hostname not in workers
         - CONTAINER_RUNTIME == "docker"
     - role: runtime/registry
       tags: registry
       vars:
         setup: hosts
-      when:
-        - inventory_hostname in nodes
+      when: inventory_hostname not in workers
     - role: k8s_common
       tags: k8s_common
-      vars:
-        k8s_repo: tuna
-      when:
-        - inventory_hostname in nodes
-    - role: k8s_worker
+      when: inventory_hostname not in workers
+    - role: k8s_worker/preflight
       tags: k8s_worker
-      vars:
-        k8s_preflight: true
-        k8s_join: true
-      when:
-        - inventory_hostname in nodes
+      when: inventory_hostname not in workers
+    - role: k8s_worker/join
+      tags: k8s_worker
+      when: inventory_hostname not in workers
   tags: add_worker

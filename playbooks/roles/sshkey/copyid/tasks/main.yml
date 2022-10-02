@@ -1,0 +1,45 @@
+---
+- set_fact:
+    # https://www.cnblogs.com/didispace/p/12524194.html
+    # https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
+    # https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html
+
+    # What is "-%}"" for in a jinja template?
+    # https://jinja.palletsprojects.com/en/latest/templates/#whitespace-control
+    # https://picostitch.com/blog/2017/01/21-the-magic-dash-in-jinja-template-block/
+    # http://jinja.quantprogramming.com/
+    sshkeys: |-
+      {%- set names = groups.k8s_master -%}
+      {%- if 'ansible_client' in groups -%}
+        {% set names = names + groups.ansible_client %}
+      {%- endif -%}
+      {%- set sshkeys = [] -%}
+      {%- for name in names|unique -%}
+        {{
+          sshkeys.append({
+            'name': name,
+            'internal_pub_key': hostvars[name]['internal_pub_key']|trim
+          })
+        }}
+      {%- endfor -%}
+      {{ sshkeys }}
+  run_once: true
+  delegate_to: localhost
+
+- name: debug sshkeys
+  debug:
+    msg: "{{ sshkeys }}"
+  run_once: true
+  delegate_to: localhost
+
+- name: copy pub key to managed nodes
+  # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/blockinfile_module.html
+  blockinfile:
+    path: ~/.ssh/authorized_keys
+    block: "{{ item.internal_pub_key }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+    insertafter: EOF
+    create: true
+    state: present
+  # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/items_lookup.html
+  with_items: "{{ sshkeys }}"

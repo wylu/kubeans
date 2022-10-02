@@ -9,7 +9,11 @@
 - hosts: k8s
   any_errors_fatal: true
   roles:
-    - role: prepare/rhel
+    - role: prepare/base
+      tags: prepare
+    - role: prepare/hosts
+      tags: prepare
+    - role: prepare/centos
       tags: prepare
       when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
     - role: prepare/reboot

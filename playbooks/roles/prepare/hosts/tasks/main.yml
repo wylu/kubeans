@@ -1,0 +1,24 @@
+---
+- set_fact:
+    hosts: |-
+      {%- set hosts = [] -%}
+      {%- for host in groups['k8s'] -%}
+        {{ hosts.append({'host': host, 'ip': hostvars[host]['ansible_host']}) }}
+      {%- endfor -%}
+      {{- hosts -}}
+  run_once: true
+  delegate_to: localhost
+
+- name: debug hosts
+  debug:
+    msg: "{{ hosts }}"
+  run_once: true
+  delegate_to: localhost
+
+- name: setup node hosts
+  blockinfile:
+    path: /etc/hosts
+    block: "{{ item.ip }} {{ item.host }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.host }}"
+    insertafter: EOF
+  with_items: "{{ hosts }}"

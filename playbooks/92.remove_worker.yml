@@ -12,21 +12,17 @@
       run_once: true
       delegate_to: localhost
     - name: get all worker nodes in the cluster
-      shell: set -o pipefail && kubectl get node -l 'node-role.kubernetes.io/worker' --no-headers|awk '{print $1}'
+      shell: >-
+        set -o pipefail &&
+        kubectl get node
+        -l 'node-role.kubernetes.io/worker'
+        --no-headers |
+        awk '{print $1}'
       register: result
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
-    - name: get worker nodes that need to be deleted
-      set_fact:
-        workers: |-
-          {%- set workers = [] -%}
-          {%- set nodes = nodes|split(',')|unique -%}
-          {%- for worker in result.stdout_lines -%}
-            {%- if worker in nodes -%}
-              {{ workers.append(worker) }}
-            {%- endif -%}
-          {%- endfor -%}
-          {{ workers }}
+    - set_fact:
+        workers: "{{ result.stdout_lines }}"
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
   tags: remove_worker
@@ -36,8 +32,19 @@
   gather_facts: false
   tasks:
     - include_role:
-        name: remove/worker
+        name: k8s_worker/remove
       vars:
         worker: "{{ item }}"
-      with_items: "{{ workers }}"
+      when: item in workers
+      with_items: "{{ nodes|split(':')|unique }}"
+  tags: remove_worker
+
+- hosts: "{{ nodes }}"
+  any_errors_fatal: true
+  tasks:
+    - block:
+        - name: populate service facts
+          service_facts:
+        - include_tasks: roles/reset/tasks/kubelet.yml
+      when: inventory_hostname in workers
   tags: remove_worker

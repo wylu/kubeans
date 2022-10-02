@@ -1,0 +1,27 @@
+---
+- name: create ssh config directory
+  file:
+    path: ~/.ssh
+    state: directory
+
+- name: generate rsa key pair
+  openssh_keypair:
+    comment: cluster internal auth
+    owner: root
+    path: ~/.ssh/id_rsa
+    state: present
+    type: rsa
+    size: 2048
+
+- name: cat pub key
+  command: cat ~/.ssh/id_rsa.pub
+  register: internal_key_result
+
+- name: set fact pub key
+  # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/set_fact_module.html
+  set_fact:
+    internal_pub_key: "{{ internal_key_result.stdout }}"
+
+- name: debug internal_pub_key
+  debug:
+    msg: "internal_pub_key: {{ internal_pub_key }}"

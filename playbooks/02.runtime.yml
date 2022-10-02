@@ -4,8 +4,6 @@
   roles:
     - role: runtime/docker
       tags: docker
-      vars:
-        docker_repo: tuna
       when: CONTAINER_RUNTIME == "docker"
 
 # https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html

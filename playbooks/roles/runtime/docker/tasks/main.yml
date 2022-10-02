@@ -65,7 +65,6 @@
   async: 3000
   poll: 0
   register: yum_sleeper
-  notify: restart and enable docker
 
 - name: whether docker has completed the installation
   async_status:

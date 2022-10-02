@@ -5,10 +5,7 @@
   roles:
     - role: k8s_common
       tags: k8s_common
-      vars:
-        k8s_repo: tuna
-    - role: k8s_worker
+    - role: k8s_worker/preflight
       tags: k8s_worker
-      vars:
-        k8s_preflight: true
-        k8s_join: true
+    - role: k8s_worker/join
+      tags: k8s_worker

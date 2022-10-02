@@ -1,9 +1,18 @@
 ---
 # https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
+- hosts: ansible_client:k8s_master
+  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: sshkey/keygen
+      tags: sshkey
+
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
 - hosts: all:!local_registry_server
   # https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: sshkey
+    - role: sshkey/copyid
       tags: sshkey

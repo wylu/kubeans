@@ -4,27 +4,19 @@
   roles:
     - role: k8s_common
       tags: k8s_common
-      vars:
-        k8s_repo: tuna
-    - role: k8s_master
+    - role: k8s_master/preflight
       tags: k8s_master
-      vars:
-        k8s_preflight: true
 
 - hosts: k8s_master[0]
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: k8s_master
+    - role: k8s_master/init
       tags: k8s_master
-      vars:
-        k8s_init: true
 
 - hosts: k8s_master[1:]
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: k8s_master
+    - role: k8s_master/join
       tags: k8s_master
-      vars:
-        k8s_join: true

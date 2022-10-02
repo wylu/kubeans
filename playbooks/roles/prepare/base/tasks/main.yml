@@ -1,0 +1,24 @@
+---
+- name: stop and disable firewalld service
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: false
+
+- name: disable selinux
+  selinux:
+    state: disabled
+
+# https://www.middlewareinventory.com/blog/ansible-inventory_hostname-ansible_hostname-variables
+- name: setup node hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: setup kernel parameters
+  copy:
+    src: 90-k8s-sysctl.conf
+    dest: /etc/sysctl.d
+  notify: reload sysctl
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

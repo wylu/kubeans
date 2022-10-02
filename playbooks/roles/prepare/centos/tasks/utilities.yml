@@ -1,0 +1,32 @@
+---
+- name: install utilities
+  block:
+    - name: install centos7 utilities
+      yum:
+        name: "{{ centos7_utilities }}"
+        state: present
+      when: ansible_facts["distribution_major_version"] == "7"
+    - name: install rocky8 utilities
+      yum:
+        name: "{{ rocky8_utilities }}"
+        state: present
+      when: ansible_facts["distribution_major_version"] == "8"
+
+- name: setup rsyslog
+  yum:
+    name: rsyslog
+    state: latest
+  notify: restart rsyslog
+
+- name: setup logrotate
+  block:
+    - name: stat logrotate
+      stat:
+        path: /etc/cron.daily/logrotate
+      register: logrotate_stat
+    - name: change logrotate time to hourly
+      command: mv -f /etc/cron.daily/logrotate /etc/cron.hourly/
+      when: logrotate_stat.stat.exists
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

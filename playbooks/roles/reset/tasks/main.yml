@@ -2,7 +2,7 @@
 - name: populate service facts
   service_facts:
 
-- include_tasks: k8s.yml
+- include_tasks: kubelet.yml
 
 - include_tasks: docker.yml
   when: CONTAINER_RUNTIME == "docker"
@@ -11,3 +11,14 @@
 
 - include_tasks: centos.yml
   when: ansible_distribution in ['CentOS', 'Rocky']
+
+- name: remove added authorized_keys
+  blockinfile:
+    path: ~/.ssh/authorized_keys
+    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+  with_items: "{{ (groups.ansible_client + groups.k8s_master)|unique }}"
+
+- name: reboot {{ inventory_hostname }}
+  reboot:
+    reboot_timeout: 600

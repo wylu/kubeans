@@ -14,9 +14,6 @@ INVENTORY=$CURRENT/hosts.ini
 # ssh 连接密码
 SSH_PASSWORD=
 
-IS_CENTOS7=false
-IS_ROCKY8=false
-
 function logger() {
     TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
     case "$1" in
@@ -36,110 +33,159 @@ function logger() {
     esac
 }
 
-function setup_system() {
-    logger info "*********************** Setup System Begin **********************"
-    if [[ -f "/etc/redhat-release" ]]; then
-        if grep '^CentOS Linux release 7\..*' /etc/redhat-release; then
-            IS_CENTOS7=true
-        fi
-        if grep '^Rocky Linux release 8\..*' /etc/redhat-release; then
-            IS_ROCKY8=true
-        fi
+get_distribution() {
+    local lsb_dist=""
+    # Every system that we officially support has /etc/os-release
+    if [[ -r /etc/os-release ]]; then
+        # shellcheck source=/dev/null
+        lsb_dist="$(. /etc/os-release && echo "$ID")"
     fi
-    logger info "************************ Setup System End ***********************"
+
+    # perform some very rudimentary platform detection
+    lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
+
+    # Returning an empty string here should be alright since the
+    # case statements don't act unless you provide an actual value
+    echo "$lsb_dist"
 }
 
 function setup_repo() {
     logger info "************************ Setup Repo Begin ***********************"
-    if [[ "$IS_CENTOS7" = true ]]; then
+    lsb_dist=$(get_distribution)
+
+    # Run setup for each distro accordingly
+    case "$lsb_dist" in
+    centos)
         # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
         if ! compgen -G "/etc/yum.repos.d/CentOS-*.repo.bak" >/dev/null; then
             # shellcheck disable=SC2016
             sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-                -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+                -e 's|^#baseurl=http://mirror.centos.org|baseurl=http://mirrors.aliyun.com|g' \
                 -i.bak \
                 /etc/yum.repos.d/CentOS-*.repo
 
+            # shellcheck disable=SC2016
+            # sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+            #     -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+            #     -i.bak \
+            #     /etc/yum.repos.d/CentOS-*.repo
+
             yum makecache
         fi
-    fi
-
-    if [[ "$IS_ROCKY8" = true ]]; then
+        ;;
+    rocky)
         # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
         if ! compgen -G "/etc/yum.repos.d/Rocky-*.repo.bak" >/dev/null; then
             # shellcheck disable=SC2016
             sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-                -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
+                -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.aliyun.com/rockylinux|g' \
                 -i.bak \
                 /etc/yum.repos.d/Rocky-*.repo
 
+            # shellcheck disable=SC2016
+            # sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+            #     -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
+            #     -i.bak \
+            #     /etc/yum.repos.d/Rocky-*.repo
+
             dnf makecache
         fi
-    fi
+        ;;
+    *)
+        logger info "" && logger error "Unsupported distribution '$lsb_dist'"
+        exit 1
+        ;;
+    esac
     logger info "************************* Setup Repo End ************************"
 }
 
 function reset_repo() {
     logger info "************************ Reset Repo Begin ***********************"
-    if [[ "$IS_CENTOS7" = true ]]; then
-        # shellcheck disable=SC2016
-        rm -f /etc/yum.repos.d/CentOS-*.repo
-        rename '.bak' '' /etc/yum.repos.d/CentOS-*.bak
+    lsb_dist=$(get_distribution)
 
-        yum makecache
-    fi
+    # Run setup for each distro accordingly
+    case "$lsb_dist" in
+    centos)
+        # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
+        if compgen -G "/etc/yum.repos.d/CentOS-*.repo.bak" >/dev/null; then
+            # shellcheck disable=SC2016
+            rm -f /etc/yum.repos.d/CentOS-*.repo
+            rename '.bak' '' /etc/yum.repos.d/CentOS-*.bak
 
-    if [[ "$IS_ROCKY8" = true ]]; then
-        # shellcheck disable=SC2016
-        rm -f /etc/yum.repos.d/Rocky-*.repo
-        rename '.bak' '' /etc/yum.repos.d/Rocky-*.bak
+            yum makecache
+        fi
+        ;;
+    rocky)
+        # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
+        if ! compgen -G "/etc/yum.repos.d/Rocky-*.repo.bak" >/dev/null; then
+            # shellcheck disable=SC2016
+            rm -f /etc/yum.repos.d/Rocky-*.repo
+            rename '.bak' '' /etc/yum.repos.d/Rocky-*.bak
 
-        dnf makecache
-    fi
+            dnf makecache
+        fi
+        ;;
+    *)
+        logger info "" && logger error "Unsupported distribution '$lsb_dist'"
+        exit 1
+        ;;
+    esac
     logger info "************************* Reset Repo End ************************"
 }
 
 function setup_ansible() {
     logger info "********************** Setup Ansible Begin **********************"
-    if [[ "$IS_CENTOS7" = true ]]; then
-        yum install epel-release -y
-        yum install expect -y
-        yum install ansible -y
-        ansible --version
+    lsb_dist=$(get_distribution)
 
-        logger info "Download default ansible.cfg from github"
-        # 初始化 ansible 配置
-        # Ansible Configuration Settings
-        # https://docs.ansible.com/ansible/2.9/reference_appendices/config.html
-        # https://github.com/ansible/ansible/blob/stable-2.9/examples/ansible.cfg
-        # https://curl.se/docs/manpage.html
-        curl -k -C - https://cdn.jsdelivr.net/gh/ansible/ansible@stable-2.9/examples/ansible.cfg \
-            -o /etc/ansible/ansible.cfg
+    # Run setup for each distro accordingly
+    case "$lsb_dist" in
+    centos | rocky)
+        yum install -y epel-release
+        yum install -y \
+            git \
+            libffi-devel \
+            openssl-devel \
+            sshpass \
+            expect \
+            python3-devel \
+            python3-pip
 
-        # 打印每个 task 执行时间
-        # Ansible callback plugin for timing individual tasks and overall execution time.
-        # https://docs.ansible.com/ansible/latest/collections/ansible/posix/profile_tasks_callback.html
-        sed -i 's/.*callback_whitelist.*/callback_whitelist = profile_tasks/g' \
-            /etc/ansible/ansible.cfg
-    fi
+        # ansible [core 2.11.12]
+        pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -U pip
+        pip3 install -i https://mirrors.aliyun.com/pypi/simple/ ansible==4.10.0
 
-    if [[ "$IS_ROCKY8" = true ]]; then
-        dnf install epel-release -y
-        dnf install expect -y
-        dnf install ansible -y
-        ansible --version
+        # ansible [core 2.11.12]
+        # pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -U pip
+        # pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple ansible==4.10.0
+        ;;
+    *)
+        logger info "" && logger error "Unsupported distribution '$lsb_dist'"
+        exit 1
+        ;;
+    esac
 
-        # 初始化 ansible 配置
-        # Ansible Configuration Settings
-        # https://docs.ansible.com/ansible/latest/reference_appendices/config.html
-        ansible-config init --disabled >/etc/ansible/ansible.cfg
+    # logger info "Download default ansible.cfg from github"
 
-        # 打印每个 task 执行时间
-        # Ansible callback plugin for timing individual tasks and overall execution time.
-        # https://docs.ansible.com/ansible/latest/collections/ansible/posix/profile_tasks_callback.html
-        sed -i 's/.*callbacks_enabled.*/callbacks_enabled=profile_tasks/g' \
-            /etc/ansible/ansible.cfg
-    fi
+    # Ansible Configuration Settings
+    # https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+    # https://docs.ansible.com/ansible/latest/installation_guide/intro_configuration.html
+    # https://github.com/ansible/ansible/blob/devel/examples/ansible.cfg
+    # https://github.com/ansible/ansible/blob/stable-2.11/examples/ansible.cfg
+    # curl -k -C - https://cdn.jsdelivr.net/gh/ansible/ansible@stable-2.11/examples/ansible.cfg \
+    #     -o /etc/ansible/ansible.cfg
+
+    # Ansible callback plugin for timing individual tasks and overall execution time.
+    # https://docs.ansible.com/ansible/latest/collections/ansible/posix/profile_tasks_callback.html
+    # sed -i 's/.*callbacks_enabled.*/callbacks_enabled = profile_tasks/g' \
+    #     /etc/ansible/ansible.cfg
+    # sed -i 's/.*forks.*/forks           = 6/g' \
+    #     /etc/ansible/ansible.cfg
+    # sed -i 's/.*host_key_checking.*/host_key_checking = False/g' \
+    #     /etc/ansible/ansible.cfg
+    # sed -i 's/.*deprecation_warnings.*/deprecation_warnings = False/g' \
+    #     /etc/ansible/ansible.cfg
+
+    ansible --version
     logger info "*********************** Setup Ansible End ***********************"
 }
 
@@ -151,7 +197,6 @@ function setup_sshkey() {
     set timeout 60
 
     spawn ansible-playbook -k \
-    --ssh-common-args "-o StrictHostKeyChecking=no" \
     -i $env(inventory) \
     $env(current)/playbooks/00.sshkey.yml
 
@@ -191,7 +236,7 @@ function setup_sshkey() {
         logger warn "Wrong Password! Please enter again!"
         logger warn "NOTE: All nodes' password must be the same!!!"
         if ! read -rs -t 30 -p "SSH password: " SSH_PASSWORD; then
-            echo "" && logger error "No Input!!! Exit!"
+            logger info "" && logger error "No Input!!! Exit!"
             exit 1
         fi
     done
@@ -225,7 +270,7 @@ Usage:
     ${BASH_SOURCE[0]} --ssh-password "root password"
 
       -h|--help                             Displays this help
-    
+
     Optional:
       -v|--verbose                          Displays verbose output
       -i|--inventory                        Specify inventory host path
@@ -286,11 +331,10 @@ function main() {
         set -x
     fi
 
-    setup_system
     setup_repo
     setup_ansible
     setup_sshkey
-    reset_repo
+    # reset_repo
 }
 
 # Invoke main with args if not sourced

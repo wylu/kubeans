@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    docker_running: |-
+    docker_running: >-
       {{
         ("docker.service" in ansible_facts.services) and
         (ansible_facts.services["docker.service"]["state"] == "running")
@@ -28,7 +28,7 @@
   when: docker_running
 
 - name: stop docker service
-  service:
+  systemd:
     name: docker
     state: stopped
     enabled: no
@@ -45,3 +45,17 @@
   until: docker_umount_dir.rc == 0
   retries: 5
   delay: 5
+
+- set_fact:
+    containerd_running: >-
+      {{
+        ("containerd.service" in ansible_facts.services) and
+        (ansible_facts.services["containerd.service"]["state"] == "running")
+      }}
+
+- name: stop containerd service
+  systemd:
+    name: containerd
+    state: stopped
+    enabled: no
+  when: containerd_running

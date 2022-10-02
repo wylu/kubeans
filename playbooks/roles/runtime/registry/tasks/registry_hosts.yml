@@ -8,15 +8,17 @@
       {%- endif -%}
       {{ local_registry_server }}
   run_once: true
+  delegate_to: localhost
 
 - name: show local_registry_server
   debug:
     msg: "{{ local_registry_server }}"
   run_once: true
+  delegate_to: localhost
 
 - name: setup {{ LOCAL_REGISTRY_HOST }} hosts
-  lineinfile:
+  blockinfile:
     path: /etc/hosts
-    regexp: "{{ LOCAL_REGISTRY_HOST }}$"
-    line: "{{ local_registry_server }} {{ LOCAL_REGISTRY_HOST }}"
+    block: "{{ local_registry_server }} {{ LOCAL_REGISTRY_HOST }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK registry"
     insertafter: EOF

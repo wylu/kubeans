@@ -1,6 +1,7 @@
 ---
 - hosts: k8s
   any_errors_fatal: true
+  gather_facts: false
   tasks:
     - name: check nodes
       assert:
@@ -10,15 +11,24 @@
         fail_msg: 'The extra argument "nodes" can not be empty'
       run_once: true
       delegate_to: localhost
+    - name: get all nodes in the cluster
+      shell: >-
+        set -o pipefail &&
+        kubectl get node
+        --no-headers |
+        awk '{print $1}'
+      register: result
+      run_once: true
+      delegate_to: "{{ groups.k8s_master.0 }}"
     - set_fact:
-        nodes: "{{ nodes|split(',')|unique }}"
+        cluster: "{{ result.stdout_lines }}"
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
   tags: reset_node
 
-- hosts: k8s
+- hosts: "{{ nodes }}"
   any_errors_fatal: true
   roles:
     - role: reset
-      when: inventory_hostname in nodes
+      when: inventory_hostname not in cluster
   tags: reset_node

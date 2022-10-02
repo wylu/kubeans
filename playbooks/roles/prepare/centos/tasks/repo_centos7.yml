@@ -1,0 +1,105 @@
+---
+- name: setup CentOS-Base official repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    mirrorlist: "{{ item.mirrorlist }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+      enabled: no
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "official"
+
+- name: setup CentOS-Base aliyun repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/os/$basearch/
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/updates/$basearch/
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/extras/$basearch/
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      baseurl: http://mirrors.aliyun.com/centos/$releasever/centosplus/$basearch/
+      enabled: no
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "aliyun"
+
+- name: setup CentOS-Base tuna repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      baseurl: https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/os/$basearch/
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      baseurl: https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/updates/$basearch/
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      baseurl: https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/extras/$basearch/
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      baseurl: https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/centosplus/$basearch/
+      enabled: no
+  notify:
+    - yum clean all
+    - yum makecache
+  when: repo_mirrors == "tuna"
+
+- name: install epel-release
+  yum:
+    name: epel-release
+    state: present
+  notify: yum makecache
+
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

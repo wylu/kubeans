@@ -1,4 +1,23 @@
 ---
+- set_fact:
+    chronyd_running: >-
+      {{
+        ("chronyd.service" in ansible_facts.services) and
+        (ansible_facts.services["chronyd.service"]["state"] == "running")
+      }}
+
+- name: stop chronyd service
+  systemd:
+    name: chronyd
+    state: stopped
+    enabled: no
+  when: chronyd_running
+
+- name: remove chrony.d directory
+  file:
+    path: /etc/chrony.d
+    state: absent
+
 - name: uninstall packages
   yum:
     name:
@@ -6,9 +25,49 @@
       - kubectl
       - kubelet
       - docker-ce
+      - chrony
     state: absent
 
-- name: reload daemon
+- name: remove kubernetes related files
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/cni
+    - /etc/containerd
+    - /etc/docker
+    - /etc/kubernetes
+    - /etc/sysctl.d/90-k8s-sysctl.conf
+    - /etc/systemd/kubernetes.slice
+    - /etc/systemd/system/docker.service.d
+    - /etc/systemd/system/kubelet.service.d
+    - /opt/cni
+    - /opt/containerd
+    # - /run/calico
+    - /run/containerd
+    - /run/docker
+    - /run/docker.sock
+    - /run/dockershim.sock
+    - /var/lib/calico
+    - /var/lib/cni
+    - /var/lib/containerd
+    - /var/lib/docker
+    - /var/lib/dockershim
+    - /var/lib/kubelet
+    - /var/log/calico
+    - /var/log/containers
+    - /var/log/pods
+    # - /var/run/calico
+    - /var/run/docker
+    - /var/run/docker.sock
+    - /var/run/containerd
+    - /var/run/dockershim.sock
+
+- name: just force systemd to re-execute itself
+  systemd:
+    daemon_reexec: yes
+
+- name: just force systemd to reread configs
   systemd:
     daemon_reload: yes
 
@@ -16,4 +75,3 @@
   systemd:
     name: NetworkManager
     state: restarted
-
