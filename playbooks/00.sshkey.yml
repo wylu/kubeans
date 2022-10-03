@@ -6,7 +6,6 @@
   gather_facts: false
   roles:
     - role: sshkey/keygen
-      tags: sshkey
 
 # https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
 - hosts: all:!local_registry_server
@@ -15,4 +14,3 @@
   gather_facts: false
   roles:
     - role: sshkey/copyid
-      tags: sshkey

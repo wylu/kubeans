@@ -11,6 +11,7 @@
       file:
         path: ~/.config/pip
         state: directory
+
     - name: setup aliyun pip.conf
       vars:
         pypi_url: https://mirrors.aliyun.com/pypi/simple/
@@ -18,6 +19,7 @@
         src: pip.conf.j2
         dest: ~/.config/pip/pip.conf
       notify: upgrade pip
+
   when: pypi_source == "aliyun"
 
 - name: setup tuna pypi source
@@ -26,6 +28,7 @@
       file:
         path: ~/.config/pip
         state: directory
+
     - name: setup tuna pip.conf
       vars:
         pypi_url: https://pypi.tuna.tsinghua.edu.cn/simple
@@ -33,7 +36,8 @@
         src: pip.conf.j2
         dest: ~/.config/pip/pip.conf
       notify: upgrade pip
+
   when: pypi_source == "tuna"
 
-- name: Force all notified handlers to run at this point, not waiting for normal sync points
+- name: force all notified handlers to run at this point
   meta: flush_handlers

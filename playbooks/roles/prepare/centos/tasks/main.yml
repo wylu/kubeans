@@ -1,6 +1,5 @@
 ---
 - include_tasks: partition.yml
-  tags: partition
   vars:
     prefix: |-
       {%- set prefix = '' -%}
@@ -13,17 +12,13 @@
 
 - block:
     - include_tasks: repo_centos7.yml
-      tags: repo
       when: ansible_facts["distribution_major_version"] == "7"
+
     - include_tasks: repo_rocky8.yml
-      tags: repo
       when: ansible_facts["distribution_major_version"] == "8"
 
 - include_tasks: utilities.yml
-  tags: utilities
 
 - include_tasks: pypi.yml
-  tags: pypi
 
 - include_tasks: ntp.yml
-  tags: ntp

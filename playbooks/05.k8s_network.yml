@@ -4,5 +4,4 @@
   gather_facts: false
   roles:
     - role: k8s_network/calico
-      tags: calico
       when: CLUSTER_NETWORK == "calico"

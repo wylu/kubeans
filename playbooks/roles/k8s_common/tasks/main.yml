@@ -53,5 +53,5 @@
     dest: /etc/systemd
   notify: enable kubernetes.slice
 
-- name: Force all notified handlers to run at this point, not waiting for normal sync points
+- name: force all notified handlers to run at this point
   meta: flush_handlers

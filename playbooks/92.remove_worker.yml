@@ -11,6 +11,7 @@
         fail_msg: 'The extra argument "nodes" can not be empty'
       run_once: true
       delegate_to: localhost
+
     - name: get all worker nodes in the cluster
       shell: >-
         set -o pipefail &&
@@ -21,11 +22,11 @@
       register: result
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
+
     - set_fact:
         workers: "{{ result.stdout_lines }}"
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
-  tags: remove_worker
 
 - hosts: k8s_master[0]
   any_errors_fatal: true
@@ -36,8 +37,7 @@
       vars:
         worker: "{{ item }}"
       when: item in workers
-      with_items: "{{ nodes|split(':')|unique }}"
-  tags: remove_worker
+      with_items: "{{ nodes|split(',')|unique }}"
 
 - hosts: "{{ nodes }}"
   any_errors_fatal: true
@@ -47,4 +47,3 @@
           service_facts:
         - include_tasks: roles/reset/tasks/kubelet.yml
       when: inventory_hostname in workers
-  tags: remove_worker

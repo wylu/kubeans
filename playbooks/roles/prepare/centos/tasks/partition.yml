@@ -11,16 +11,21 @@
   block:
     - name: umount home partition
       command: umount /home
+
     - name: disable home partition
       shell:
         cmd: sed -i 's/^\/dev\/mapper\/{{ prefix }}-home/#&/' /etc/fstab
         warn: false
+
     - name: remove lv of home partition
       shell: lvremove /dev/mapper/{{ prefix }}-home -y
+
     - name: extend lv of root partition
       command: lvextend -l +100%FREE /dev/mapper/{{ prefix }}-root
+
     - name: xfs_growfs root partition
       command: xfs_growfs /dev/mapper/{{ prefix }}-root
+
   # https://github.com/ansible/ansible/issues/22397
   when: (prefix + "-home") in partition_info.stdout
 
@@ -28,8 +33,10 @@
   block:
     - name: disable swap partition temporarily
       command: swapoff -a
+
     - name: disable swap partition permanently
       shell:
         cmd: sed -i 's/^\/dev\/mapper\/{{ prefix }}-swap/#&/' /etc/fstab
         warn: false
+
   when: swap_info.stdout != "0"

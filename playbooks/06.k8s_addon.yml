@@ -4,7 +4,6 @@
   gather_facts: false
   roles:
     - role: k8s_addon/helm
-      tags: k8s_addon
       when: HELM_ENABLE == "yes"
 
 - hosts: k8s_master[0]
@@ -12,8 +11,6 @@
   gather_facts: false
   roles:
     - role: k8s_addon/metrics_server
-      tags: k8s_addon
       when: METRICES_SERVER_ENABLE == "yes"
     - role: k8s_addon/dashboard
-      tags: k8s_addon
       when: DASHBOARD_ENABLE == "yes"

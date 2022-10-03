@@ -1,12 +1,19 @@
 ---
-- name: reboot all k8s nodes excluding ansible client
-  reboot:
-    reboot_timeout: 600
-    msg: reboot {{ ansible_host }}
-  when: ansible_host != ansible_client_ip
+- block:
+    - set_fact:
+        # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
+        ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split()|first }}"
+      run_once: true
+      delegate_to: localhost
 
-- name: reboot ansible client
-  reboot:
-    reboot_timeout: 600
-    msg: reboot {{ ansible_host }}
-  when: ansible_host == ansible_client_ip
+    - name: "reboot node: {{ inventory_hostname }}"
+      reboot:
+        reboot_timeout: 600
+      when: ansible_host != ansible_client_ip
+
+    - name: "reboot ansible client: {{ inventory_hostname }}"
+      reboot:
+        reboot_timeout: 600
+      when: ansible_host == ansible_client_ip
+
+  when: REBOOT == "yes"

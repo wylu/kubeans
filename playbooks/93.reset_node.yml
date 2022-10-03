@@ -11,6 +11,7 @@
         fail_msg: 'The extra argument "nodes" can not be empty'
       run_once: true
       delegate_to: localhost
+
     - name: get all nodes in the cluster
       shell: >-
         set -o pipefail &&
@@ -20,15 +21,20 @@
       register: result
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
+
     - set_fact:
         cluster: "{{ result.stdout_lines }}"
       run_once: true
       delegate_to: "{{ groups.k8s_master.0 }}"
-  tags: reset_node
 
 - hosts: "{{ nodes }}"
   any_errors_fatal: true
-  roles:
-    - role: reset
+  tasks:
+    - block:
+        - include_role:
+            name: reset
+        - include_role:
+            name: prepare/reboot
+          vars:
+            REBOOT: "yes"
       when: inventory_hostname not in cluster
-  tags: reset_node

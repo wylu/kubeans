@@ -13,7 +13,11 @@
   shell: kubectl apply -f ~/kubernetes/addon/metrics_server/
 
 - name: waiting metrics server ready
-  shell: set -o pipefail && kubectl -n kube-system get pod|grep metrics-server|awk '{print $3}'
+  shell: >-
+    set -o pipefail &&
+    kubectl -n kube-system get pod |
+    grep metrics-server |
+    awk '{print $3}'
   register: metrics_server_status
   # https://stackoverflow.com/questions/42673045/ansible-when-statements-should-not-include-jinja2-templating-delimiters
   until: metrics_server_status.stdout_lines|unique|list == ['Running']

@@ -17,8 +17,4 @@
     path: ~/.ssh/authorized_keys
     state: absent
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
-  with_items: "{{ (groups.ansible_client + groups.k8s_master)|unique }}"
-
-- name: reboot {{ inventory_hostname }}
-  reboot:
-    reboot_timeout: 600
+  with_items: "{{ groups.k8s_master }}"

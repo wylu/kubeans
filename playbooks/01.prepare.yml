@@ -4,21 +4,12 @@
   gather_facts: false
   roles:
     - role: prepare/check
-      tags: prepare
 
 - hosts: k8s
   any_errors_fatal: true
   roles:
     - role: prepare/base
-      tags: prepare
     - role: prepare/hosts
-      tags: prepare
     - role: prepare/centos
-      tags: prepare
       when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
     - role: prepare/reboot
-      tags: prepare
-      vars:
-        # https://stackoverflow.com/questions/34560622/best-way-to-get-the-ip-address-of-the-ansible-control-machine
-        ansible_client_ip: "{{ ansible_env['SSH_CLIENT'].split()|first }}"
-      when: REBOOT == "yes"
