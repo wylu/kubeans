@@ -42,14 +42,14 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
 evictionHard:
-  memory.available: "512Mi"
-  imagefs.available: "512Mi"
+  memory.available: "256Mi"
+  imagefs.available: "256Mi"
   imagefs.inodesFree: "5%"
   nodefs.available: "5%"
   nodefs.inodesFree: "5%"
 evictionSoft:
-  memory.available: "1024Mi"
-  imagefs.available: "1Gi"
+  memory.available: "512Mi"
+  imagefs.available: "512Mi"
   imagefs.inodesFree: "10%"
   nodefs.available: "10%"
   nodefs.inodesFree: "10%"
@@ -61,11 +61,11 @@ evictionSoftGracePeriod:
   nodefs.inodesFree: "30s"
 kubeReserved:
   cpu: "200m"
-  memory: "1Gi"
+  memory: "256Mi"
 systemReserved:
   cpu: "200m"
-  memory: "1Gi"
-  ephemeral-storage: "10Gi"
+  memory: "256Mi"
+  ephemeral-storage: "5Gi"
 kubeReservedCgroup: "/kubernetes.slice"
 systemReservedCgroup: "/system.slice"
 enforceNodeAllocatable:
@@ -76,7 +76,7 @@ enforceNodeAllocatable:
 {% if SYS_RESERVED_ENABLE == 'yes' %}
   - system-reserved
 {% endif %}
-maxPods: 256
+maxPods: 128
 
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
