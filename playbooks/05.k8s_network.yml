@@ -5,3 +5,5 @@
   roles:
     - role: k8s_network/calico
       when: CLUSTER_NETWORK == "calico"
+    - role: k8s_network/flannel
+      when: CLUSTER_NETWORK == "flannel"

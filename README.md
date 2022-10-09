@@ -252,7 +252,7 @@ ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
 #### dig 测试
 
 ```shell
-➜ dnf/yum install bind-utils -y
+➜ yum install bind-utils -y
 
 ➜ dig -t A www.baidu.com @10.96.0.10 +short
 

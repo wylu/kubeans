@@ -9,9 +9,13 @@ centos7_utilities:
   - python36
   # - java-11-openjdk
   - ipvsadm
+  - bind-utils
+  - bridge-utils
 
 rocky8_utilities:
   - openssh
   - python36
   # - java-11-openjdk
   - ipvsadm
+  - bind-utils
+  - bridge-utils

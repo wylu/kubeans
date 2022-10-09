@@ -6,17 +6,20 @@
 ############################
 # Whether to reboot the system after preparing cluster environment
 REBOOT: "no"
+
 # Local ntp server
 NTP_HOST: "ntp.local"
 
 ############################
 # role:runtime [docker]
 ############################
-DOCKER_VER: "20.10.17"
 REGISTRY_VER: "2.8.1"
 LOCAL_REGISTRY_HOST: "registry.local"
 LOCAL_REGISTRY_PORT: "5000"
 LOCAL_REGISTRY: "{{ LOCAL_REGISTRY_HOST }}:{{ LOCAL_REGISTRY_PORT }}"
+
+# [docker]
+DOCKER_VER: "20.10.17"
 # [docker] 信任的 HTTP 仓库
 INSECURE_REGISTRIES:
   - "{{ LOCAL_REGISTRY }}"
@@ -28,7 +31,9 @@ K8S_VER: "1.23.6"
 K8S_IMAGE_REPOSITORY: "registry.aliyuncs.com/google_containers"
 
 # 高可用模式依赖服务
+# [haproxy]
 HAPROXY_VER: "2.1.4"
+# [keepalived]
 KEEPALIVED_VER: "2.0.17"
 
 ############################
@@ -44,20 +49,27 @@ KUBE_RESERVED_ENABLE: "no"
 SYS_RESERVED_ENABLE: "no"
 
 ############################
-# role:network [calico]
+# role:network [calico, flannel]
 ############################
+# [calico]
 CALICO_VER: "3.24.1"
 
+# [flannel]
+FLANNEL_VER: "0.19.2"
+FLANNEL_CNI_PLUGIN_VER: "1.1.0"
+
 ############################
-# role:cluster-addon
+# role:cluster-addon [helm, metrics-server, dashboard]
 ############################
-# helm 自动安装
+# [helm]
 HELM_ENABLE: "yes"
 HELM_VER: "3.9.4"
-# metrics-server 自动安装
+
+# [metrics-server]
 METRICES_SERVER_ENABLE: "yes"
 METRICES_SERVER_VER: "0.6.1"
-# dashboard 自动安装
+
+# [dashboard]
 DASHBOARD_ENABLE: "yes"
 DASHBOARD_VER: "2.6.1"
 METRICS_SCRAPER_VER: "1.0.8"

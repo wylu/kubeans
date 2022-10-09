@@ -14,6 +14,29 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
+- name: load kernel module
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - ip_vs
+    - ip_vs_rr
+    - ip_vs_wrr
+    - ip_vs_sh
+    - nf_conntrack
+  ignore_errors: true
+
+- name: try to load nf_conntrack_ipv4
+  shell: modprobe nf_conntrack_ipv4 || echo "NotFound"
+  register: nf_conntrack_ipv4
+
+- name: add kernel module startup loading config
+  template:
+    src: 10-k8s-modules.conf.j2
+    dest: /etc/modules-load.d/10-k8s-modules.conf
+  notify: enable systemd-modules-load
+
 - name: setup kernel parameters
   copy:
     src: 90-k8s-sysctl.conf

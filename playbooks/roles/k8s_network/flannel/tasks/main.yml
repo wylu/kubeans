@@ -1,0 +1,30 @@
+---
+- name: prepare network directory
+  file:
+    name: ~/kubernetes/network
+    state: directory
+
+# https://github.com/flannel-io/flannel/blob/v0.19.2/Documentation/kube-flannel.yml
+- name: create flannel init config
+  template:
+    src: kube-flannel.yaml.j2
+    dest: ~/kubernetes/network/kube-flannel.yaml
+    owner: root
+    group: root
+    mode: 0600
+
+- name: install k8s network plugin
+  shell: kubectl apply -f ~/kubernetes/network/kube-flannel.yaml
+
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met
+- name: waiting network ready
+  shell: >-
+    set -o pipefail &&
+    kubectl get pod -n kube-flannel -o wide |
+    grep 'flannel' |
+    awk '{print $3}'
+  register: flannel_status
+  until: flannel_status.stdout_lines|unique|list == ['Running']
+  retries: 60
+  delay: 60
+  ignore_errors: true

@@ -104,6 +104,13 @@
       tag: "v{{ CALICO_VER }}"
       enable: "{{ (CLUSTER_NETWORK == 'calico')|ternary('yes', 'no') }}"
 
+    - repository: rancher/mirrored-flannelcni-flannel
+      tag: "v{{ FLANNEL_VER }}"
+      enable: "{{ (CLUSTER_NETWORK == 'flannel')|ternary('yes', 'no') }}"
+    - repository: rancher/mirrored-flannelcni-flannel-cni-plugin
+      tag: "v{{ FLANNEL_CNI_PLUGIN_VER }}"
+      enable: "{{ (CLUSTER_NETWORK == 'flannel')|ternary('yes', 'no') }}"
+
     - repository: "{{ K8S_IMAGE_REPOSITORY }}/metrics-server"
       tag: "v{{ METRICES_SERVER_VER }}"
       local_repository: "metrics-server/metrics-server"
