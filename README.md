@@ -550,7 +550,7 @@ sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
 - 查看 service 状态
 
   ```shell
-  [root@dev235 ansible-k8s]# systemctl status top.service
+  [root@localhost ~]# systemctl status top.service
   ● top.service - top
      Loaded: loaded (/usr/lib/systemd/system/top.service; disabled; vendor preset: disabled)
      Active: active (running) since Thu 2022-09-08 00:27:48 CST; 11s ago
@@ -559,7 +559,7 @@ sed -i 's/^\/dev\/mapper\/rl-swap/#&/' /etc/fstab
              └─20056 /usr/bin/top -b
 
   ...
-  [root@dev235 ansible-k8s]# systemctl status kubernetes.slice
+  [root@localhost ~]# systemctl status kubernetes.slice
   ● kubernetes.slice - kubernetes slice
      Loaded: loaded (/usr/lib/systemd/system/kubernetes.slice; static; vendor preset: disabled)
      Active: active since Thu 2022-09-08 00:26:09 CST; 3min 11s ago

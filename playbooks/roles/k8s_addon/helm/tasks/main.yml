@@ -1,6 +1,6 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html
-- name: download helm package on control node
+- name: download official helm package on control node
   get_url:
     url: "https://get.helm.sh/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
     dest: "/tmp/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
@@ -10,6 +10,20 @@
   # connection: local
   # https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html
   delegate_to: localhost
+  when: helm_repo == "official"
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html
+- name: download huaweicloud helm package on control node
+  get_url:
+    url: "https://mirrors.huaweicloud.com/helm/v{{ HELM_VER }}/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
+    dest: "/tmp/helm-v{{ HELM_VER }}-linux-amd64.tar.gz"
+    # checksum: "sha256:https://mirrors.huaweicloud.com/helm/v{{ HELM_VER }}/helm-v{{ HELM_VER }}-linux-amd64.tar.gz.sha256"
+  run_once: true
+  # http://willthames.github.io/2018/07/01/connection-local-vs-delegate_to-localhost.html
+  # connection: local
+  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html
+  delegate_to: localhost
+  when: helm_repo == "huaweicloud"
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html
 - name: copy helm package to all k8s_master nodes
