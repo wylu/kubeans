@@ -23,6 +23,8 @@
   with_items:
     - docker0
     - tunl0
+    - flannel.1
+    - cni0
     - kube-ipvs0
 
 - name: remove added hosts information

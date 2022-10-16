@@ -36,18 +36,26 @@
     - /etc/cni
     - /etc/containerd
     - /etc/docker
+    - /etc/flannel
     - /etc/kubernetes
+    - /etc/modules-load.d/10-k8s-modules.conf
     - /etc/sysctl.d/90-k8s-sysctl.conf
     - /etc/systemd/kubernetes.slice
+    - /etc/systemd/system/containerd.service
+    - /etc/systemd/system/docker.service
     - /etc/systemd/system/docker.service.d
+    - /etc/systemd/system/docker.service.requires/
     - /etc/systemd/system/kubelet.service.d
     - /opt/cni
     - /opt/containerd
     # - /run/calico
+    - /run/flannel
     - /run/containerd
     - /run/docker
     - /run/docker.sock
     - /run/dockershim.sock
+    - /usr/bin/docker
+    - /usr/share/bash-completion/completions/docker
     - /var/lib/calico
     - /var/lib/cni
     - /var/lib/containerd
