@@ -1,4 +1,10 @@
 ---
+- hosts: ansible_client
+  any_errors_fatal: true
+  roles:
+    - role: prepare/nfs
+      when: nfs_server == "yes"
+
 - hosts: k8s_master
   any_errors_fatal: true
   gather_facts: false
@@ -12,5 +18,7 @@
   roles:
     - role: k8s_addon/metrics_server
       when: METRICES_SERVER_ENABLE == "yes"
+    - role: k8s_addon/nfs_provisioner
+      when: NFS_PROVISIONER_ENABLE == "yes"
     - role: k8s_addon/dashboard
       when: DASHBOARD_ENABLE == "yes"

@@ -28,6 +28,7 @@
     - [测试应用部署](#测试应用部署)
       - [创建 namespace](#创建-namespace)
       - [创建 deployment](#创建-deployment)
+    - [测试动态 pv](#测试动态-pv)
   - [附录](#附录)
     - [关闭 swap](#关闭-swap)
     - [合并 /home 分区到 / 分区](#合并-home-分区到--分区)
@@ -39,20 +40,19 @@
 
 | Role                  |   Host   |       IP       |    K8S |
 | :-------------------- | :------: | :------------: | -----: |
-| ansible_client        | client00 | 10.128.170.230 |        |
 | k8s_master            | master01 | 10.128.170.231 | 1.23.6 |
 | k8s_master            | master02 | 10.128.170.232 | 1.23.6 |
 | k8s_master            | master03 | 10.128.170.233 | 1.23.6 |
 | k8s_worker            | worker01 | 10.128.170.21  | 1.23.6 |
 | k8s_worker            | worker02 | 10.128.170.22  | 1.23.6 |
 | k8s_worker            | worker03 | 10.128.170.23  | 1.23.6 |
+| ansible_client        | client00 | 10.128.170.230 |        |
 | local_registry_server | registry | 10.128.170.235 |        |
+| nfs_server            |   nfs    | 10.128.170.235 |        |
 
-ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令。
-
-**注意：在 k8s_master 节点上执行部署命令时，需要将 hosts.ini 文件中的 ansible_client 节点注释掉。**
-
-local_registry_server 是本地镜像仓库节点，如果想要使用已有的本地镜像仓库，可以在清单文件中指定。
+- ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令。
+- local_registry_server 是本地镜像仓库节点，如果想要使用已有的本地镜像仓库，可以在清单文件中指定。
+- nfs 是网络文件系统，允许系统将其目录和文件共享给网络上的其他系统，它不是必需的，启用 k8s 集群 nfs 存储时需要指定服务器地址。
 
 ## 支持系统
 
@@ -147,6 +147,8 @@ systemctl restart NetworkManager
 ### 安装 ansible
 
 只需在只执行剧本的节点执行即可，这里在 ansible_client 节点或任意 k8s_master 节点执行。
+
+**注意：在 k8s_master 节点上执行部署命令时，需要将 hosts.ini 文件中的 ansible_client 节点注释掉。**
 
 ```shell
 chmod +x setup_ansible.sh && ./setup_ansible.sh --ssh-password "root password"
@@ -387,6 +389,57 @@ ETag: "61cb2d26-267"
 Accept-Ranges: bytes
 
 ```
+
+### 测试动态 pv
+
+在第一个 master 节点 ~/kubernetes/addon/nfs_provisioner/ 有个测试例子 test-pod.yaml。
+
+部署测试 pod：
+
+```shell
+[root@master01 ~]# kubectl apply -f ~/kubernetes/addon/nfs_provisioner/test-pod.yaml
+persistentvolumeclaim/test-claim created
+pod/test-pod created
+```
+
+验证测试 pod：
+
+```shell
+[root@master01 ~]# kubectl get pod
+NAME       READY   STATUS      RESTARTS   AGE
+test-pod   0/1     Completed   0          99s
+```
+
+验证自动创建的 pv 资源：
+
+```shell
+[root@master01 ~]# kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                STORAGECLASS   REASON   AGE
+pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de   2Mi        RWX            Delete           Bound    default/test-claim   nfs-storage             2m37s
+```
+
+验证 PVC 已经绑定成功：（STATUS 字段为 Bound）
+
+```shell
+[root@master01 ~]# kubectl get pvc
+NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+test-claim   Bound    pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de   2Mi        RWX            nfs-storage    4m17s
+```
+
+另外，Pod 启动完成后，会在挂载的目录中创建一个 `SUCCESS` 文件。我们可以到 NFS 服务器去看下：
+
+```shell
+[root@loaclhost nfs]# pwd
+/opt/data/nfs
+[root@loaclhost nfs]# tree
+.
+└── default-test-claim-pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de
+    └── SUCCESS
+
+1 directory, 1 file
+```
+
+如上，可以发现挂载的时候，nfs-client 根据 PVC 自动创建了一个目录，我们 Pod 中挂载的 `/mnt`，实际引用的就是该目录，而我们在 `/mnt` 下创建的 `SUCCESS` 文件，也自动写入到了这里。
 
 ## 附录
 

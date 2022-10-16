@@ -7,15 +7,13 @@ centos7_utilities:
   - yum-utils
   - openssh
   - python36
-  # - java-11-openjdk
   - ipvsadm
   - bind-utils
-  - bridge-utils
+  - nfs-utils
 
 rocky8_utilities:
   - openssh
   - python36
-  # - java-11-openjdk
   - ipvsadm
   - bind-utils
-  - bridge-utils
+  - nfs-utils

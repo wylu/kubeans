@@ -59,15 +59,21 @@ FLANNEL_VER: "0.19.2"
 FLANNEL_CNI_PLUGIN_VER: "1.1.0"
 
 ############################
-# role:cluster-addon [helm, metrics-server, dashboard]
+# role:cluster-addon [helm, metrics-server, nfs-provisioner, dashboard]
 ############################
 # [helm]
-HELM_ENABLE: "yes"
+HELM_ENABLE: "no"
 HELM_VER: "3.9.4"
 
 # [metrics-server]
-METRICES_SERVER_ENABLE: "yes"
+METRICES_SERVER_ENABLE: "no"
 METRICES_SERVER_VER: "0.6.1"
+
+# [nfs-provisioner]
+NFS_PROVISIONER_ENABLE: "no"
+NFS_PROVISIONER_VER: "4.0.2"
+NFS_PROVISIONER_NAMESPACE: "nfs-provisioner"
+NFS_STORAGE_CLASS: "nfs-storage"
 
 # [dashboard]
 DASHBOARD_ENABLE: "yes"

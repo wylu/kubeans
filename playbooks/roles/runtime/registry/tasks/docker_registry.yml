@@ -116,6 +116,11 @@
       local_repository: "metrics-server/metrics-server"
       enable: "{{ METRICES_SERVER_ENABLE|default('no', true) }}"
 
+    - repository: easzlab/nfs-subdir-external-provisioner
+      tag: "v{{ NFS_PROVISIONER_VER }}"
+      local_repository: "sig-storage/nfs-subdir-external-provisioner"
+      enable: "{{ NFS_PROVISIONER_ENABLE|default('no', true) }}"
+
     - repository: kubernetesui/dashboard
       tag: "v{{ DASHBOARD_VER }}"
       enable: "{{ DASHBOARD_ENABLE|default('no', true) }}"

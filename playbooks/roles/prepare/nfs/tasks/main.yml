@@ -1,0 +1,38 @@
+---
+- name: populate service facts
+  service_facts:
+
+- set_fact:
+    firewalld_running: >-
+      {{
+        ("firewalld.service" in ansible_facts.services) and
+        (ansible_facts.services["firewalld.service"]["state"] == "running")
+      }}
+
+- name: set firewall rules for nfs
+  shell: >-
+    firewall-cmd --add-service=nfs --permanent &&
+    firewall-cmd --add-service=rpc-bind --permanent &&
+    firewall-cmd --add-service=mountd --permanent &&
+    firewall-cmd --reload
+  when: firewalld_running
+
+- name: prepare nfs share directory
+  file:
+    name: "{{ NFS_PATH }}"
+    state: directory
+
+# https://github.com/easzlab/kubeasz/blob/master/docs/guide/nfs-server.md
+- name: set nfs share directory permissions
+  template:
+    src: exports.j2
+    dest: /etc/exports
+
+- name: install nfs packages
+  yum:
+    name: nfs-utils
+    state: present
+  notify: restart nfs server
+
+- name: force all notified handlers to run at this point
+  meta: flush_handlers

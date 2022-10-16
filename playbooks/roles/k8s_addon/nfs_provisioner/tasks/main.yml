@@ -1,0 +1,19 @@
+---
+- name: prepare nfs provisioner directory
+  file:
+    name: ~/kubernetes/addon/nfs_provisioner
+    state: directory
+
+# https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+# https://github.com/easzlab/kubeasz/blob/master/docs/setup/08-cluster-storage.md
+# https://zhuanlan.zhihu.com/p/447663656
+- name: prepare nfs provisioner deployment file
+  template:
+    src: "{{ item }}.j2"
+    dest: ~/kubernetes/addon/nfs_provisioner/{{ item }}
+  with_items:
+    - nfs-provisioner.yaml
+    - test-pod.yaml
+
+- name: apply nfs provisioner deployment
+  shell: kubectl apply -f ~/kubernetes/addon/nfs_provisioner/nfs-provisioner.yaml
