@@ -111,6 +111,11 @@
       tag: "v{{ FLANNEL_CNI_PLUGIN_VER }}"
       enable: "{{ (CLUSTER_NETWORK == 'flannel')|ternary('yes', 'no') }}"
 
+    - repository: easzlab/k8s-dns-node-cache
+      tag: "{{ NODELOCALDNS_VER }}"
+      local_repository: "dns/k8s-dns-node-cache"
+      enable: "{{ NODELOCALDNS_ENABLE|default('no', true) }}"
+
     - repository: "{{ K8S_IMAGE_REPOSITORY }}/metrics-server"
       tag: "v{{ METRICES_SERVER_VER }}"
       local_repository: "metrics-server/metrics-server"

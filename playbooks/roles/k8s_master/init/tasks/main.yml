@@ -1,4 +1,12 @@
 ---
+- name: get dns service ip
+  shell: echo {{ SERVICE_CIDR }}|cut -d/ -f1|awk -F. '{print $1"."$2"."$3"."$4+10}'
+  register: dns_svc_ip
+
+- name: set_fact cluster_dns_server
+  set_fact:
+    cluster_dns_server: "{{ dns_svc_ip.stdout }}"
+
 - name: prepare ~/kubernetes directory
   file:
     path: ~/kubernetes

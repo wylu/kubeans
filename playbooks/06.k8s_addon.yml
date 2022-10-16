@@ -16,6 +16,8 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
+    - role: k8s_addon/nodelocaldns
+      when: NODELOCALDNS_ENABLE == "yes"
     - role: k8s_addon/metrics_server
       when: METRICES_SERVER_ENABLE == "yes"
     - role: k8s_addon/nfs_provisioner

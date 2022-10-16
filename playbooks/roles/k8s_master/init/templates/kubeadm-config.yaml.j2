@@ -41,6 +41,13 @@ scheduler: {}
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
+clusterDNS:
+{% if NODELOCALDNS_ENABLE == 'yes' %}
+  - {{ LOCAL_DNS_SERVER }}
+{% else %}
+  - {{ cluster_dns_server }}
+{% endif %}
+clusterDomain: {{ CLUSTER_DNS_DOMAIN }}
 evictionHard:
   memory.available: "256Mi"
   imagefs.available: "256Mi"

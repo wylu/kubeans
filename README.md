@@ -28,6 +28,7 @@
     - [测试应用部署](#测试应用部署)
       - [创建 namespace](#创建-namespace)
       - [创建 deployment](#创建-deployment)
+    - [测试 nodelocaldns](#测试-nodelocaldns)
     - [测试动态 pv](#测试动态-pv)
   - [附录](#附录)
     - [关闭 swap](#关闭-swap)
@@ -388,6 +389,106 @@ Connection: keep-alive
 ETag: "61cb2d26-267"
 Accept-Ranges: bytes
 
+```
+
+### 测试 nodelocaldns
+
+查看 pod：
+
+```shell
+[root@master01 ~]# kubectl -n kube-system get pod -o wide | grep dns
+coredns-6d8c4cb4d-plcpv                 1/1     Running   0          25m   10.244.5.2       worker01   <none>           <none>
+coredns-6d8c4cb4d-z7sxs                 1/1     Running   0          25m   10.244.5.1       worker01   <none>           <none>
+node-local-dns-rtxrw                    1/1     Running   0          18m   10.128.170.21    worker01   <none>           <none>
+node-local-dns-vgjh6                    1/1     Running   0          18m   10.128.170.231   master01   <none>           <none>
+```
+
+查看 service：
+
+```shell
+[root@master01 ~]# kubectl -n kube-system get svc -o wide | grep dns
+kube-dns            ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP,9153/TCP   26m   k8s-app=kube-dns
+kube-dns-upstream   ClusterIP   10.111.10.191   <none>        53/UDP,53/TCP            19m   k8s-app=kube-dns
+node-local-dns      ClusterIP   None            <none>        9253/TCP                 19m   k8s-app=node-local-dns
+```
+
+查看 Corefile：
+
+```shell
+[root@master01 ~]# kubectl -n kube-system exec -it node-local-dns-rtxrw -- /bin/sh
+# cat /etc/Corefile
+cluster.local:53 {
+    errors
+    cache {
+            success 9984 30
+            denial 9984 5
+    }
+    reload
+    loop
+    bind 169.254.20.10 10.96.0.10
+    forward . 10.111.10.191 {
+            force_tcp
+    }
+    prometheus :9253
+    health 169.254.20.10:8080
+    }
+in-addr.arpa:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 169.254.20.10 10.96.0.10
+    forward . 10.111.10.191 {
+            force_tcp
+    }
+    prometheus :9253
+    }
+ip6.arpa:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 169.254.20.10 10.96.0.10
+    forward . 10.111.10.191 {
+            force_tcp
+    }
+    prometheus :9253
+    }
+.:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 169.254.20.10 10.96.0.10
+    forward . /etc/resolv.conf
+    prometheus :9253
+    }
+#
+```
+
+测试域名解析：
+
+```shell
+[root@master01 ~]# kubectl run -it --rm --image=busybox:1.28.3 -- sh
+If you don't see a command prompt, try pressing enter.
+/ # cat /etc/resolv.conf
+nameserver 169.254.20.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+/ # nslookup kubernetes.default
+Server:    169.254.20.10
+Address 1: 169.254.20.10
+
+Name:      kubernetes.default
+Address 1: 10.96.0.1 kubernetes.default.svc.cluster.local
+/ # nslookup www.baidu.com
+Server:    169.254.20.10
+Address 1: 169.254.20.10
+
+Name:      www.baidu.com
+Address 1: 14.215.177.38
+Address 2: 14.215.177.39
+/ #
 ```
 
 ### 测试动态 pv

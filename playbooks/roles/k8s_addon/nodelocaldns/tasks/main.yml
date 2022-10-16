@@ -1,0 +1,24 @@
+---
+- name: get dns service ip
+  shell: echo {{ SERVICE_CIDR }}|cut -d/ -f1|awk -F. '{print $1"."$2"."$3"."$4+10}'
+  register: dns_svc_ip
+
+- name: set_fact cluster_dns_server
+  set_fact:
+    cluster_dns_server: "{{ dns_svc_ip.stdout }}"
+
+- name: prepare nodelocaldns directory
+  file:
+    name: ~/kubernetes/addon/nodelocaldns
+    state: directory
+
+# https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/nodelocaldns/
+# https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/nodelocaldns
+# https://blog.51cto.com/u_14143894/2515451
+- name: prepare nodelocaldns deployment file
+  template:
+    src: nodelocaldns.yaml.j2
+    dest: ~/kubernetes/addon/nodelocaldns/nodelocaldns.yaml
+
+- name: apply nodelocaldns deployment
+  shell: kubectl apply -f ~/kubernetes/addon/nodelocaldns/nodelocaldns.yaml

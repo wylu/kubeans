@@ -59,11 +59,17 @@ FLANNEL_VER: "0.19.2"
 FLANNEL_CNI_PLUGIN_VER: "1.1.0"
 
 ############################
-# role:cluster-addon [helm, metrics-server, nfs-provisioner, dashboard]
+# role:cluster-addon [helm, nodelocaldns, metrics-server, nfs-provisioner, dashboard]
 ############################
 # [helm]
 HELM_ENABLE: "no"
 HELM_VER: "3.9.4"
+
+# [nodelocaldns]
+NODELOCALDNS_ENABLE: "no"
+NODELOCALDNS_VER: "1.22.8"
+# 设置 node local dns 地址
+LOCAL_DNS_SERVER: "169.254.20.10"
 
 # [metrics-server]
 METRICES_SERVER_ENABLE: "no"
