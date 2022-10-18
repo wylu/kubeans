@@ -44,3 +44,14 @@
     upgrade prometheus --install
     -f ~/kubernetes/addon/prometheus/values.yaml
     ~/kubernetes/addon/prometheus/kube-prometheus-stack-{{ PROMETHEUS_VER }}.tgz
+
+- name: show prometheus web addresses
+  vars:
+    # vip: "{{ hostvars[groups['k8s_master'][0]]['ansible_host'] }}"
+    vip: "{{ hostvars[groups.k8s_master.0]['ansible_host'] }}"
+    host: "{{ (HA_ENABLE == 'yes')|ternary(APISERVER_VIP, vip) }}"
+  debug:
+    msg:
+      - "prometheus listen on http://{{ host }}:30901/"
+      - "alertmanager listen on http://{{ host }}:30902/"
+      - "grafana listen on http://{{ host }}:30903/ (default username/password is admin/prom-operator)"

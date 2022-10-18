@@ -7,6 +7,9 @@
   - [支持系统](#支持系统)
   - [环境准备](#环境准备)
     - [配置静态 IP](#配置静态-ip)
+  - [配置文件](#配置文件)
+    - [hosts.ini](#hostsini)
+    - [playbooks/group_vars/all.yaml](#playbooksgroup_varsallyaml)
   - [部署步骤](#部署步骤)
     - [修改 hosts.ini 配置](#修改-hostsini-配置)
       - [高可用模式](#高可用模式)
@@ -21,6 +24,13 @@
     - [添加 worker](#添加-worker)
     - [移除 worker](#移除-worker)
     - [重置节点](#重置节点)
+  - [kubernetes 扩展](#kubernetes-扩展)
+    - [helm](#helm)
+    - [nodelocaldns](#nodelocaldns)
+    - [metrics-server](#metrics-server)
+    - [nfs-provisioner](#nfs-provisioner)
+    - [prometheus](#prometheus)
+    - [dashboard](#dashboard)
   - [kubernetes 测试](#kubernetes-测试)
     - [测试域名解析](#测试域名解析)
       - [dig 测试](#dig-测试)
@@ -51,9 +61,12 @@
 | local_registry_server | registry | 10.128.170.235 |        |
 | nfs_server            |   nfs    | 10.128.170.235 |        |
 
-- ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令。
-- local_registry_server 是本地镜像仓库节点，如果想要使用已有的本地镜像仓库，可以在清单文件中指定。
-- nfs 是网络文件系统，允许系统将其目录和文件共享给网络上的其他系统，它不是必需的，启用 k8s 集群 nfs 存储时需要指定服务器地址。
+- k8s_master 是集群的控制节点
+- k8s_worker 是集群的工作节点
+- 非高可用模式下，最少只需要两个机器就可以部署一个 k8s 集群
+- ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令
+- local_registry_server 是本地镜像仓库节点，用于加速集群部署镜像下载，它不是必需的，如果想要使用已有的本地镜像仓库，可以在清单文件中指定
+- nfs 是网络文件系统，允许系统将其目录和文件共享给网络上的其他系统，它不是必需的，启用 k8s 集群扩展 nfs-provisioner 时需要指定 nfs 服务器地址
 
 ## 支持系统
 
@@ -125,6 +138,23 @@ systemctl restart NetworkManager
        valid_lft forever preferred_lft forever
 ```
 
+## 配置文件
+
+一般情况下，只需要通过以下两个配置文件就可以控制集群部署行为。
+
+- hosts.ini
+- playbooks/group_vars/all.yaml
+
+### hosts.ini
+
+- 主机清单文件
+- 包含常用全局配置
+
+### playbooks/group_vars/all.yaml
+
+- 集群配置文件
+- 包含集群扩展配置
+
 ## 部署步骤
 
 ### 修改 hosts.ini 配置
@@ -171,7 +201,7 @@ ansible-playbook -i hosts.ini playbooks/90.setup.yml
 ansible-playbook -i hosts.ini playbooks/01.prepare.yml
 ```
 
-**注意：命令执行完后会自动重启系统使配置生效，需等待系统重启完成后才能继续后续步骤。**
+**注意：命令执行完后，如果设置了 `REBOOT: "yes"`，系统将会自动重启，此时需等待系统重启完成后才能继续后续步骤。**
 
 #### 安装容器运行时
 
@@ -215,6 +245,8 @@ ansible-playbook -i hosts.ini playbooks/02.runtime.yml
 
 ### 添加 worker
 
+**添加新的 worker 节点前，要在 host.ini 文件中添加节点配置到 `[k8s_worker]` 下，然后再执行添加命令。**
+
 ```shell
 ansible-playbook -i host.ini playbooks/91.add_worker.yml -e nodes=worker03 -e ansible_ssh_pass="password"
 ```
@@ -248,6 +280,91 @@ ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
 
 - `-e nodes`: 指定要重置的节点，对应清单中的 hostname，支持指定多个节点，指定多个节点时使用英文逗号 `,` 隔开，如：`-e nodes=worker04,worker05`
 
+## kubernetes 扩展
+
+### helm
+
+- 默认不启用 helm 扩展
+- 若要启用 helm 扩展需要设置 `HELM_ENABLE: "yes"`
+
+### nodelocaldns
+
+- 默认不启用 nodelocaldns 扩展
+- 若要启用 nodelocaldns 扩展需要设置 `NODELOCALDNS_ENABLE: "yes"`
+
+### metrics-server
+
+- 默认不启用 metrics-server 扩展
+- 若要启用 metrics-server 扩展需要设置 `METRICES_SERVER_ENABLE: "yes"`
+
+启用 metrics-server 扩展后可以使用 `kubectl top` 查看 node 和 pod 的 CPU/MEMORY 使用情况：
+
+```shell
+[root@master01 ~]# kubectl top node
+NAME       CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+master01   210m         5%     2201Mi          31%
+worker01   159m         2%     2341Mi          15%
+```
+
+```shell
+[root@master01 ~]# kubectl -n kube-system top pod
+NAME                                    CPU(cores)   MEMORY(bytes)
+calico-kube-controllers-fdd9b97-ggkgz   2m           31Mi
+calico-node-n7qx2                       29m          180Mi
+calico-node-rx8wb                       21m          169Mi
+coredns-6d8c4cb4d-5wvfx                 2m           34Mi
+coredns-6d8c4cb4d-ccjnc                 2m           28Mi
+etcd-master01                           12m          111Mi
+kube-apiserver-master01                 47m          639Mi
+kube-controller-manager-master01        11m          85Mi
+kube-proxy-jk9nl                        7m           28Mi
+kube-proxy-t84d6                        9m           28Mi
+kube-scheduler-master01                 4m           38Mi
+metrics-server-6bb4988d74-s95c7         4m           21Mi
+```
+
+### nfs-provisioner
+
+- 默认不启用 nfs-provisioner 扩展
+- 若要启用 nfs-provisioner 扩展需要设置 `NFS_PROVISIONER_ENABLE: "yes"`
+- 同时还需要设置 host.ini 中的 `NFS_SERVER` 和 `NFS_PATH`
+
+**启用 nfs-provisioner 扩展至少需要一个 nfs 服务器，用于提供底层存储，其中 `NFS_SERVER` 是 nfs 服务器地址，`NFS_PATH` 是共享目录。**
+
+你可以通过 host.ini 配置文件为某一主机设置 `nfs_server=yes`，这将会在对应主机自动创建一个 nfs 服务器，此时 `NFS_SERVER` 应为该主机地址。
+
+或者你也可以根据文档 [nfs-server](https://github.com/easzlab/kubeasz/blob/master/docs/guide/nfs-server.md)，自行创建一个 nfs 服务器。
+
+### prometheus
+
+- 默认不启用 prometheus 扩展
+- 若要启用 prometheus 扩展需要设置 `PROMETHEUS_ENABLE: "yes"`
+- 同时还需要启用 helm 扩展，因为 prometheus 需要使用 helm 进行安装
+
+访问 web 界面：
+
+- prometheus: <http://MasterNodeIP:30901/>
+- alertmanager: <http://MasterNodeIP:30902/>
+- grafana: <http://MasterNodeIP:30903/> （默认账号/密码 admin/prom-operator）
+
+**其中 MasterNodeIP 为任意 master 节点 IP，在高可用模式下，MasterNodeIP 还可以是 `APISERVER_VIP` 配置的 IP。**
+
+### dashboard
+
+- 默认启用 dashboard 扩展
+- 若要关闭 dashboard 扩展需要设置 `DASHBOARD_ENABLE: "no"`
+
+访问 web 界面：
+
+- dashboard: <https://MasterNodeIP:30443/>
+- 在任意 master 节点执行以下命令获取 token
+
+  ```shell
+  kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret|grep admin-user|awk '{print $1}')
+  ```
+
+**其中 MasterNodeIP 为任意 master 节点 IP，在高可用模式下，MasterNodeIP 还可以是 `APISERVER_VIP` 配置的 IP。**
+
 ## kubernetes 测试
 
 ### 测试域名解析
@@ -255,10 +372,9 @@ ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
 #### dig 测试
 
 ```shell
-➜ yum install bind-utils -y
+[root@master01 ~]# yum install bind-utils -y
 
-➜ dig -t A www.baidu.com @10.96.0.10 +short
-
+[root@master01 ~]# dig -t A www.baidu.com @10.96.0.10 +short
 www.a.shifen.com.
 182.61.200.6
 182.61.200.7
@@ -267,8 +383,7 @@ www.a.shifen.com.
 #### pod 测试
 
 ```shell
-➜ kubectl run -it --rm --image=busybox:1.28.3 -- sh
-
+[root@master01 ~]# kubectl run -it --rm --image=busybox:1.28.3 -- sh
 If you don't see a command prompt, try pressing enter.
 / # cat /etc/resolv.conf
 nameserver 10.96.0.10
@@ -297,12 +412,10 @@ round-trip min/avg/max = 6.488/6.807/7.288 ms
 #### 创建 namespace
 
 ```shell
-➜ kubectl create namespace dev
-
+[root@master01 ~]# kubectl create namespace dev
 namespace/dev created
 
-➜ kubectl get namespace
-
+[root@master01 ~]# kubectl get namespace
 NAME              STATUS   AGE
 default           Active   15h
 dev               Active   15s
@@ -314,7 +427,7 @@ kube-system       Active   15h
 #### 创建 deployment
 
 ```shell
-➜ cat > ~/nginx-deployment.yaml << EOF
+[root@master01 ~]# cat > ~/nginx-deployment.yaml << EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -335,12 +448,10 @@ spec:
         image: nginx:latest
 EOF
 
-➜ kubectl apply -f ~/nginx-deployment.yaml
-
+[root@master01 ~]# kubectl apply -f ~/nginx-deployment.yaml
 deployment.apps/nginx-deployment created
 
-➜ kubectl get pod -n dev
-
+[root@master01 ~]# kubectl get pod -n dev
 NAME                                READY   STATUS    RESTARTS   AGE
 nginx-deployment-7d4578b56c-cndrb   1/1     Running   0          48s
 ```
@@ -348,7 +459,7 @@ nginx-deployment-7d4578b56c-cndrb   1/1     Running   0          48s
 创建 service
 
 ```shell
-➜ cat > ~/nginx-service.yaml << EOF
+[root@master01 ~]# cat > ~/nginx-service.yaml << EOF
 apiVersion: v1
 kind: Service
 metadata:
@@ -364,12 +475,10 @@ spec:
     nodePort: 30001
 EOF
 
-➜ kubectl apply -f ~/nginx-service.yaml
-
+[root@master01 ~]# kubectl apply -f ~/nginx-service.yaml
 service/nginx-service created
 
-➜ kubectl get svc -n dev
-
+[root@master01 ~]# kubectl get svc -n dev
 NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 nginx-service   NodePort   10.108.42.72    <none>        80:30001/TCP   17s
 ```
@@ -377,8 +486,7 @@ nginx-service   NodePort   10.108.42.72    <none>        80:30001/TCP   17s
 测试服务访问
 
 ```shell
-➜ curl 10.128.170.20:30001 -I
-
+[root@master01 ~]# curl 10.128.170.20:30001 -I
 HTTP/1.1 200 OK
 Server: nginx/1.21.5
 Date: Mon, 12 Sep 2022 05:44:38 GMT
