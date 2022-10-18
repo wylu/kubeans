@@ -22,5 +22,7 @@
       when: METRICES_SERVER_ENABLE == "yes"
     - role: k8s_addon/nfs_provisioner
       when: NFS_PROVISIONER_ENABLE == "yes"
+    - role: k8s_addon/prometheus
+      when: PROMETHEUS_ENABLE == "yes"
     - role: k8s_addon/dashboard
       when: DASHBOARD_ENABLE == "yes"

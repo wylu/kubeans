@@ -1,0 +1,46 @@
+---
+- name: prepare prometheus directory
+  file:
+    name: ~/kubernetes/addon/prometheus
+    state: directory
+
+- name: copy kube-prometheus-stack package to master
+  copy:
+    src: kube-prometheus-stack-{{ PROMETHEUS_VER }}.tgz
+    dest: ~/kubernetes/addon/prometheus/kube-prometheus-stack-{{ PROMETHEUS_VER }}.tgz
+
+- name: get all namespaces
+  shell: >-
+    set -o pipefail &&
+    kubectl get ns --no-headers |
+    awk '{print $1}'
+  register: ns_info
+
+- name: create namespace "{{ PROMETHEUS_NAMESPACE }}"
+  command: kubectl create ns {{ PROMETHEUS_NAMESPACE }}
+  when: PROMETHEUS_NAMESPACE not in ns_info.stdout_lines
+
+- name: get etcd-client-cert info
+  command: kubectl get secrets -n {{ PROMETHEUS_NAMESPACE }}
+  register: secrets_info
+
+- name: create etcd-client-cert
+  shell: >-
+    kubectl -n {{ PROMETHEUS_NAMESPACE }}
+    create secret generic etcd-client-cert
+    --from-file=etcd-ca=/etc/kubernetes/pki/etcd/ca.crt
+    --from-file=etcd-client=/etc/kubernetes/pki/etcd/healthcheck-client.crt
+    --from-file=etcd-client-key=/etc/kubernetes/pki/etcd/healthcheck-client.key
+  when: '"etcd-client-cert" not in secrets_info.stdout'
+
+- name: set prometheus chart values
+  template:
+    src: values.yaml.j2
+    dest: ~/kubernetes/addon/prometheus/values.yaml
+
+- name: helm install or upgrade kube-prometheus-stack
+  shell: >-
+    helm -n {{ PROMETHEUS_NAMESPACE }}
+    upgrade prometheus --install
+    -f ~/kubernetes/addon/prometheus/values.yaml
+    ~/kubernetes/addon/prometheus/kube-prometheus-stack-{{ PROMETHEUS_VER }}.tgz

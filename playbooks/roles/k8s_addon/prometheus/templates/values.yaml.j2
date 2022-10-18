@@ -1,0 +1,156 @@
+## Provide a k8s version to auto dashboard import script example: kubeTargetVersionOverride: 1.16.6
+kubeTargetVersionOverride: {{ K8S_VER }}
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    image:
+      repository: {{ LOCAL_REGISTRY }}/prometheus/alertmanager
+
+  ## Configuration for Alertmanager service
+  service:
+    nodePort: 30902
+    type: NodePort 
+
+## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+grafana:
+  enabled: true
+  adminPassword: prom-operator
+  image:
+    repository: {{ LOCAL_REGISTRY }}/prometheus/grafana
+  service:
+    nodePort: 30903
+    type: NodePort
+  sidecar:
+    image:
+      repository: {{ LOCAL_REGISTRY }}/prometheus/k8s-sidecar
+    skipTlsVerify: true
+
+## Component scraping the kube api server
+kubeApiServer:
+  enabled: true
+
+## Component scraping the kubelet and kubelet-hosted cAdvisor
+kubelet:
+  enabled: true
+
+## Component scraping the kube controller manager
+kubeControllerManager:
+  enabled: true
+  endpoints:
+{% for host in groups['k8s_master'] %}
+    - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+  service:
+    port: 10257
+    targetPort: 10257
+  serviceMonitor:
+    https: true
+    insecureSkipVerify: true
+    serverName: localhost
+
+## Component scraping coreDns. Use either this or kubeDns
+coreDns:
+  enabled: true
+
+## Component scraping etcd
+kubeEtcd:
+  enabled: true
+  endpoints:
+{% for host in groups['k8s_master'] %}
+    - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+  serviceMonitor:
+    scheme: https
+    insecureSkipVerify: true 
+    serverName: localhost
+    caFile: /etc/prometheus/secrets/etcd-client-cert/etcd-ca
+    certFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client
+    keyFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client-key
+
+
+## Component scraping kube scheduler
+kubeScheduler:
+  enabled: true
+  endpoints:
+{% for host in groups['k8s_master'] %}
+    - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+  service:
+    port: 10259
+    targetPort: 10259
+  serviceMonitor:
+    https: true
+    insecureSkipVerify: true
+
+## Component scraping kube proxy
+kubeProxy:
+  enabled: true
+  endpoints:
+{% for host in groups['k8s_master'] %}
+    - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+{% for host in groups['k8s_worker'] %}
+    - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+## Configuration for kube-state-metrics subchart
+kube-state-metrics:
+  image:
+    repository: {{ LOCAL_REGISTRY }}/prometheus/kube-state-metrics
+
+## Manages Prometheus and Alertmanager components
+prometheusOperator:
+  enabled: true
+  admissionWebhooks:
+    enabled: true
+    patch:
+      image:
+        repository: {{ LOCAL_REGISTRY }}/prometheus/kube-webhook-certgen
+  image:
+    repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus-operator
+  service:
+    nodePort: 30899
+    nodePortTls: 30900
+    type: NodePort
+  prometheusConfigReloader:
+    image:
+      repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus-config-reloader
+
+## Deploy a Prometheus instance
+prometheus:
+  enabled: true
+
+  ## Configuration for Prometheus service
+  service:
+    nodePort: 30901
+    type: NodePort 
+
+  prometheusSpec:
+    image:
+      repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus
+    replicas: 1
+
+    secrets:
+      - etcd-client-cert
+
+    storageSpec: {}
+    ## Using PersistentVolumeClaim
+    ##
+    #  volumeClaimTemplate:
+    #    spec:
+    #      storageClassName: gluster
+    #      accessModes: ["ReadWriteOnce"]
+    #      resources:
+    #        requests:
+    #          storage: 50Gi
+    #    selector: {}
+
+    ## Using tmpfs volume
+    ##
+    #  emptyDir:
+    #    medium: Memory
+
+prometheus-node-exporter:
+  image:
+    repository: {{ LOCAL_REGISTRY }}/prometheus/node-exporter

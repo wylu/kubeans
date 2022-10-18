@@ -126,6 +126,43 @@
       local_repository: "sig-storage/nfs-subdir-external-provisioner"
       enable: "{{ NFS_PROVISIONER_ENABLE|default('no', true) }}"
 
+    - repository: easzlab/kube-state-metrics
+      tag: "v2.4.1"
+      local_repository: "prometheus/kube-state-metrics"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: easzlab/kube-webhook-certgen
+      tag: "v1.1.1"
+      local_repository: "prometheus/kube-webhook-certgen"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: grafana/grafana
+      tag: "8.5.3"
+      local_repository: "prometheus/grafana"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/kiwigrid/k8s-sidecar
+      tag: "1.15.6"
+      local_repository: "prometheus/k8s-sidecar"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/prometheus-operator/prometheus-config-reloader
+      tag: "v0.56.3"
+      local_repository: "prometheus/prometheus-config-reloader"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/prometheus-operator/prometheus-operator
+      tag: "v0.56.3"
+      local_repository: "prometheus/prometheus-operator"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/prometheus/alertmanager
+      tag: "v0.24.0"
+      local_repository: "prometheus/alertmanager"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/prometheus/node-exporter
+      tag: "v1.3.1"
+      local_repository: "prometheus/node-exporter"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+    - repository: quay.io/prometheus/prometheus
+      tag: "v2.35.0"
+      local_repository: "prometheus/prometheus"
+      enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
+
     - repository: kubernetesui/dashboard
       tag: "v{{ DASHBOARD_VER }}"
       enable: "{{ DASHBOARD_ENABLE|default('no', true) }}"

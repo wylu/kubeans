@@ -59,7 +59,7 @@ FLANNEL_VER: "0.19.2"
 FLANNEL_CNI_PLUGIN_VER: "1.1.0"
 
 ############################
-# role:cluster-addon [helm, nodelocaldns, metrics-server, nfs-provisioner, dashboard]
+# role:cluster-addon [helm, nodelocaldns, metrics-server, nfs-provisioner, prometheus, dashboard]
 ############################
 # [helm]
 HELM_ENABLE: "no"
@@ -80,6 +80,11 @@ NFS_PROVISIONER_ENABLE: "no"
 NFS_PROVISIONER_VER: "4.0.2"
 NFS_PROVISIONER_NAMESPACE: "nfs-provisioner"
 NFS_STORAGE_CLASS: "nfs-storage"
+
+# [prometheus]
+PROMETHEUS_ENABLE: "no"
+PROMETHEUS_VER: "35.5.1"
+PROMETHEUS_NAMESPACE: "monitoring"
 
 # [dashboard]
 DASHBOARD_ENABLE: "yes"
