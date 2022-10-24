@@ -8,15 +8,15 @@
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: runtime/docker
-      when: CONTAINER_RUNTIME == "docker"
+    - role: runtime/containerd
+      when: CONTAINER_RUNTIME == "containerd"
 
 - hosts: k8s
   any_errors_fatal: true
   gather_facts: false
   roles:
-    - role: runtime/containerd
-      when: CONTAINER_RUNTIME == "containerd"
+    - role: runtime/docker
+      when: CONTAINER_RUNTIME == "docker"
 
 # https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
 - hosts: k8s:registry_server

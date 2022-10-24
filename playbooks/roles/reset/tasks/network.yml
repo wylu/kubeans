@@ -32,4 +32,4 @@
     path: /etc/hosts
     state: absent
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
-  with_items: "{{ (groups.all + ['ntp'])|unique }}"
+  with_items: "{{ (groups.all + ['ntp', 'registry'])|unique }}"

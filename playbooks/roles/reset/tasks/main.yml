@@ -4,8 +4,7 @@
 
 - include_tasks: kubelet.yml
 
-- include_tasks: docker.yml
-  when: CONTAINER_RUNTIME == "docker"
+- include_tasks: runtime.yml
 
 - include_tasks: network.yml
 

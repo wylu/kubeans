@@ -360,7 +360,7 @@ metrics-server-6bb4988d74-s95c7         4m           21Mi
 - 在任意 master 节点执行以下命令获取 token
 
   ```shell
-  kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret|grep admin-user|awk '{print $1}')
+  kubectl -n kubernetes-dashboard describe secret admin-user
   ```
 
 **其中 MasterNodeIP 为任意 master 节点 IP，在高可用模式下，MasterNodeIP 还可以是 `APISERVER_VIP` 配置的 IP。**

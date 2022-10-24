@@ -25,6 +25,7 @@
       - kubectl
       - kubelet
       - docker-ce
+      - containerd.io
       - chrony
     state: absent
 
@@ -35,12 +36,14 @@
   with_items:
     - /etc/cni
     - /etc/containerd
+    - /etc/crictl.yaml
     - /etc/docker
     - /etc/flannel
     - /etc/kubernetes
     - /etc/modules-load.d/10-k8s-modules.conf
     - /etc/sysctl.d/95-k8s-sysctl.conf
     - /etc/systemd/kubernetes.slice
+    - /etc/systemd/system.conf.d/30-k8s-ulimits.conf
     - /etc/systemd/system/containerd.service
     - /etc/systemd/system/docker.service
     - /etc/systemd/system/docker.service.d

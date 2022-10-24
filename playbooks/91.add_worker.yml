@@ -43,10 +43,15 @@
         - include_role:
             name: prepare/base
         - include_role:
+            name: prepare/hosts
+        - include_role:
             name: prepare/centos
           when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
         - include_role:
             name: prepare/reboot
+        - include_role:
+            name: runtime/containerd
+          when: CONTAINER_RUNTIME == "containerd"
         - include_role:
             name: runtime/docker
           when: CONTAINER_RUNTIME == "docker"
