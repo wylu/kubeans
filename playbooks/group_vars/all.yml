@@ -4,33 +4,57 @@
 ############################
 # role:prepare
 ############################
-# Whether to reboot the system after preparing cluster environment
+# 节点基础环境准备完成后是否自动重启系统
 REBOOT: "no"
 
-# Local ntp server
+# 本地 ntp 服务器地址
 NTP_HOST: "ntp.local"
 
 ############################
-# role:runtime [docker]
+# role:runtime [docker, containerd]
 ############################
+# 本地镜像仓库配置
 REGISTRY_VER: "2.8.1"
-LOCAL_REGISTRY_HOST: "registry.local"
-LOCAL_REGISTRY_PORT: "5000"
-LOCAL_REGISTRY: "{{ LOCAL_REGISTRY_HOST }}:{{ LOCAL_REGISTRY_PORT }}"
+REGISTRY_HOST: "registry.local"
+REGISTRY_PORT: "5000"
+REGISTRY_SERVICE: "{{ REGISTRY_HOST }}:{{ REGISTRY_PORT }}"
+
+# 镜像仓库加速地址
+REGISTRY_MIRRORS:
+  docker.io:
+    - "https://mirror.baidubce.com"
+    - "https://hub-mirror.c.163.com"
+    - "https://docker.mirrors.ustc.edu.cn"
+  gcr.io:
+    - "https://gcr.mirrors.ustc.edu.cn"
+  k8s.gcr.io:
+    - "https://gcr.mirrors.ustc.edu.cn/google-containers"
+  quay.io:
+    - "https://quay.mirrors.ustc.edu.cn"
 
 # [docker]
 DOCKER_VER: "20.10.17"
 # [docker] 信任的 HTTP 仓库
-INSECURE_REGISTRIES:
-  - "{{ LOCAL_REGISTRY }}"
+DOCKER_INSECURE_REGISTRIES:
+  - "{{ REGISTRY_SERVICE }}"
+
+# [containerd]
+CONTAINERD_VER: "1.6.8"
+# [containerd] 信任的 HTTP 仓库
+CONTAINERD_INSECURE_REGISTRIES:
+  - "http://{{ REGISTRY_SERVICE }}"
+# [containerd] pod 根容器镜像版本
+CONTAINERD_PAUSE_VER: "3.7"
 
 ############################
 # role:kube-master
 ############################
+# kubernetes 版本
 K8S_VER: "1.23.6"
+# kubernetes 组件镜像加速地址
 K8S_IMAGE_REPOSITORY: "registry.aliyuncs.com/google_containers"
 
-# 高可用模式依赖服务
+# 高可用模式依赖 haproxy, keepalived
 # [haproxy]
 HAPROXY_VER: "2.1.4"
 # [keepalived]
@@ -62,31 +86,37 @@ FLANNEL_CNI_PLUGIN_VER: "1.1.0"
 # role:cluster-addon [helm, nodelocaldns, metrics-server, nfs-provisioner, prometheus, dashboard]
 ############################
 # [helm]
+# 是否启用 helm 扩展
 HELM_ENABLE: "no"
 HELM_VER: "3.9.4"
 
 # [nodelocaldns]
+# 是否启用 nodelocaldns 扩展
 NODELOCALDNS_ENABLE: "no"
 NODELOCALDNS_VER: "1.22.8"
 # 设置 node local dns 地址
 LOCAL_DNS_SERVER: "169.254.20.10"
 
 # [metrics-server]
+# 是否启用 metrics-server 扩展
 METRICES_SERVER_ENABLE: "no"
 METRICES_SERVER_VER: "0.6.1"
 
 # [nfs-provisioner]
+# 是否启用 nfs-provisioner 扩展
 NFS_PROVISIONER_ENABLE: "no"
 NFS_PROVISIONER_VER: "4.0.2"
 NFS_PROVISIONER_NAMESPACE: "nfs-provisioner"
 NFS_STORAGE_CLASS: "nfs-storage"
 
 # [prometheus]
+# 是否启用 prometheus 扩展（若启用该扩展需要同时启用 helm 扩展）
 PROMETHEUS_ENABLE: "no"
 PROMETHEUS_VER: "35.5.1"
 PROMETHEUS_NAMESPACE: "monitoring"
 
 # [dashboard]
+# 是否启用 dashboard 扩展
 DASHBOARD_ENABLE: "yes"
 DASHBOARD_VER: "2.6.1"
 METRICS_SCRAPER_VER: "1.0.8"

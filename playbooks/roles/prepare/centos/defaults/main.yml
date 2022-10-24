@@ -3,17 +3,27 @@ repo_mirrors: aliyun
 pypi_source: aliyun
 
 centos7_utilities:
-  - bash-completion
-  - yum-utils
+  - bash-completion # bash命令补全工具
+  - bind-utils
+  - conntrack-tools # ipvs 模式需要
+  - ipset # ipvs 模式需要
+  - ipvsadm # ipvs 模式需要
+  - libseccomp # 安装 containerd 需要
+  - net-tools
+  - nfs-utils # 启用 nfs-provisioner 扩展需要
   - openssh
   - python36
-  - ipvsadm
-  - bind-utils
-  - nfs-utils
+  - socat # 用于 port forwarding
+  - yum-utils
 
 rocky8_utilities:
-  - openssh
-  - python36
-  - ipvsadm
   - bind-utils
-  - nfs-utils
+  - conntrack-tools # ipvs 模式需要
+  - ipset # ipvs 模式需要
+  - ipvsadm # ipvs 模式需要
+  - libseccomp # 安装 containerd 需要
+  - net-tools
+  - nfs-utils # 启用 nfs-provisioner 扩展需要
+  - openssh
+  - socat # 用于 port forwarding
+  - python36

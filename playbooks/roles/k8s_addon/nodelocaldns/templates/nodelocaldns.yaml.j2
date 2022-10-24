@@ -139,7 +139,7 @@ spec:
       containers:
         - name: node-cache
           #image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.8
-          image: {{ LOCAL_REGISTRY }}/dns/k8s-dns-node-cache:{{ NODELOCALDNS_VER }}
+          image: {{ REGISTRY_SERVICE }}/dns/k8s-dns-node-cache:{{ NODELOCALDNS_VER }}
           resources:
             requests:
               cpu: 25m

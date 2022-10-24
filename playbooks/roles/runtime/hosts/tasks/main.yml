@@ -1,24 +1,24 @@
 ---
-- name: set_fact local_registry_server
+- name: set_fact registry_server
   set_fact:
-    local_registry_server: |-
-      {%- set local_registry_server = hostvars[groups.k8s_master.0]['ansible_host'] -%}
-      {%- if 'local_registry_server' in groups and groups.local_registry_server|length > 0 -%}
-        {% set local_registry_server = hostvars[groups.local_registry_server.0]['ansible_host'] %}
+    registry_server: |-
+      {%- set registry_server = hostvars[groups.k8s_master.0]['ansible_host'] -%}
+      {%- if 'registry_server' in groups and groups.registry_server|length > 0 -%}
+        {% set registry_server = hostvars[groups.registry_server.0]['ansible_host'] %}
       {%- endif -%}
-      {{ local_registry_server }}
+      {{ registry_server }}
   run_once: true
   delegate_to: localhost
 
-- name: show local_registry_server
+- name: show registry_server
   debug:
-    msg: "{{ local_registry_server }}"
+    msg: "{{ registry_server }}"
   run_once: true
   delegate_to: localhost
 
-- name: setup {{ LOCAL_REGISTRY_HOST }} hosts
+- name: setup {{ REGISTRY_HOST }} hosts
   blockinfile:
     path: /etc/hosts
-    block: "{{ local_registry_server }} {{ LOCAL_REGISTRY_HOST }}"
+    block: "{{ registry_server }} {{ REGISTRY_HOST }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK registry"
     insertafter: EOF

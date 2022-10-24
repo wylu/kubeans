@@ -14,7 +14,7 @@ localAPIEndpoint:
   advertiseAddress: {{ ansible_host }}
   bindPort: {{ APISERVER_PORT }}
 nodeRegistration:
-  criSocket: /var/run/dockershim.sock
+  criSocket: {{ cri_socket }}
   imagePullPolicy: IfNotPresent
   taints: null
 
@@ -33,16 +33,16 @@ apiServer:
   timeoutForControlPlane: 4m0s
 controllerManager:
   extraArgs:
-    node-cidr-mask-size: "24"
+    node-cidr-mask-size: "{{ NODE_CIDR_MASK_SIZE }}"
     bind-address: 0.0.0.0
 etcd:
   local:
     extraArgs:
       listen-metrics-urls: http://0.0.0.0:2381
 networking:
-  dnsDomain: cluster.local
+  dnsDomain: {{ CLUSTER_DNS_DOMAIN }}
+  podSubnet: {{ POD_CIDR }}
   serviceSubnet: {{ SERVICE_CIDR }}
-  podSubnet: {{ CLUSTER_CIDR }}
 scheduler:
   extraArgs:
     bind-address: 0.0.0.0

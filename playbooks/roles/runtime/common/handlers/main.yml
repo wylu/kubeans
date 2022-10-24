@@ -1,0 +1,5 @@
+---
+- name: yum makecache
+  command:
+    cmd: yum makecache
+    warn: false

@@ -140,7 +140,7 @@ spec:
             # https://github.com/kubernetes-sigs/metrics-server/issues/637
             - --kubelet-insecure-tls
           #image: k8s.gcr.io/metrics-server/metrics-server:v0.6.1
-          image: {{ LOCAL_REGISTRY }}/metrics-server/metrics-server:v{{ METRICES_SERVER_VER }}
+          image: {{ REGISTRY_SERVICE }}/metrics-server/metrics-server:v{{ METRICES_SERVER_VER }}
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3

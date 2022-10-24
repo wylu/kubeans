@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-    - image: {{ LOCAL_REGISTRY }}/haproxy:{{ HAPROXY_VER }}
+    - image: {{ REGISTRY_SERVICE }}/haproxy:{{ HAPROXY_VER }}
       name: haproxy
       livenessProbe:
         failureThreshold: 8

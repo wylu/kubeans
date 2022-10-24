@@ -5,7 +5,7 @@ alertmanager:
   enabled: true
   alertmanagerSpec:
     image:
-      repository: {{ LOCAL_REGISTRY }}/prometheus/alertmanager
+      repository: {{ REGISTRY_SERVICE }}/prometheus/alertmanager
 
   ## Configuration for Alertmanager service
   service:
@@ -17,13 +17,13 @@ grafana:
   enabled: true
   adminPassword: prom-operator
   image:
-    repository: {{ LOCAL_REGISTRY }}/prometheus/grafana
+    repository: {{ REGISTRY_SERVICE }}/prometheus/grafana
   service:
     nodePort: 30903
     type: NodePort
   sidecar:
     image:
-      repository: {{ LOCAL_REGISTRY }}/prometheus/k8s-sidecar
+      repository: {{ REGISTRY_SERVICE }}/prometheus/k8s-sidecar
     skipTlsVerify: true
 
 ## Component scraping the kube api server
@@ -97,7 +97,7 @@ kubeProxy:
 ## Configuration for kube-state-metrics subchart
 kube-state-metrics:
   image:
-    repository: {{ LOCAL_REGISTRY }}/prometheus/kube-state-metrics
+    repository: {{ REGISTRY_SERVICE }}/prometheus/kube-state-metrics
 
 ## Manages Prometheus and Alertmanager components
 prometheusOperator:
@@ -106,16 +106,16 @@ prometheusOperator:
     enabled: true
     patch:
       image:
-        repository: {{ LOCAL_REGISTRY }}/prometheus/kube-webhook-certgen
+        repository: {{ REGISTRY_SERVICE }}/prometheus/kube-webhook-certgen
   image:
-    repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus-operator
+    repository: {{ REGISTRY_SERVICE }}/prometheus/prometheus-operator
   service:
     nodePort: 30899
     nodePortTls: 30900
     type: NodePort
   prometheusConfigReloader:
     image:
-      repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus-config-reloader
+      repository: {{ REGISTRY_SERVICE }}/prometheus/prometheus-config-reloader
 
 ## Deploy a Prometheus instance
 prometheus:
@@ -128,7 +128,7 @@ prometheus:
 
   prometheusSpec:
     image:
-      repository: {{ LOCAL_REGISTRY }}/prometheus/prometheus
+      repository: {{ REGISTRY_SERVICE }}/prometheus/prometheus
     replicas: 1
 
     secrets:
@@ -153,4 +153,4 @@ prometheus:
 
 prometheus-node-exporter:
   image:
-    repository: {{ LOCAL_REGISTRY }}/prometheus/node-exporter
+    repository: {{ REGISTRY_SERVICE }}/prometheus/node-exporter

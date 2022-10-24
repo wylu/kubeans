@@ -49,23 +49,23 @@
 
 示例：
 
-| Role                  |   Host   |       IP       |    K8S |
-| :-------------------- | :------: | :------------: | -----: |
-| k8s_master            | master01 | 10.128.170.231 | 1.23.6 |
-| k8s_master            | master02 | 10.128.170.232 | 1.23.6 |
-| k8s_master            | master03 | 10.128.170.233 | 1.23.6 |
-| k8s_worker            | worker01 | 10.128.170.21  | 1.23.6 |
-| k8s_worker            | worker02 | 10.128.170.22  | 1.23.6 |
-| k8s_worker            | worker03 | 10.128.170.23  | 1.23.6 |
-| ansible_client        | client00 | 10.128.170.230 |        |
-| local_registry_server | registry | 10.128.170.235 |        |
-| nfs_server            |   nfs    | 10.128.170.235 |        |
+| Role            |   Host   |       IP       |    K8S |
+| :-------------- | :------: | :------------: | -----: |
+| k8s_master      | master01 | 10.128.170.231 | 1.23.6 |
+| k8s_master      | master02 | 10.128.170.232 | 1.23.6 |
+| k8s_master      | master03 | 10.128.170.233 | 1.23.6 |
+| k8s_worker      | worker01 | 10.128.170.21  | 1.23.6 |
+| k8s_worker      | worker02 | 10.128.170.22  | 1.23.6 |
+| k8s_worker      | worker03 | 10.128.170.23  | 1.23.6 |
+| ansible_client  | client00 | 10.128.170.230 |        |
+| registry_server | registry | 10.128.170.235 |        |
+| nfs_server      |   nfs    | 10.128.170.235 |        |
 
 - k8s_master 是集群的控制节点
 - k8s_worker 是集群的工作节点
 - 非高可用模式下，最少只需要两个机器就可以部署一个 k8s 集群
 - ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令
-- local_registry_server 是本地镜像仓库节点，用于加速集群部署镜像下载，它不是必需的，如果想要使用已有的本地镜像仓库，可以在清单文件中指定
+- registry_server 是本地镜像仓库节点，用于加速集群部署镜像下载，它不是必需的，如果想要使用已有的本地镜像仓库，可以在清单文件中指定
 - nfs 是网络文件系统，允许系统将其目录和文件共享给网络上的其他系统，它不是必需的，启用 k8s 集群扩展 nfs-provisioner 时需要指定 nfs 服务器地址
 
 ## 支持系统

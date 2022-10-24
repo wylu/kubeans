@@ -8,7 +8,7 @@
     - role: sshkey/keygen
 
 # https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
-- hosts: all:!local_registry_server
+- hosts: all:!registry_server
   # https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html
   any_errors_fatal: true
   gather_facts: false

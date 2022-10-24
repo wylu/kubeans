@@ -1,0 +1,62 @@
+---
+- name: setup docker-ce official repository
+  block:
+    - name: setup centos7 docker-ce official repository
+      command: yum-config-manager --add-repo {{ docker_official_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce official repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_official_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+  when: docker_repo == "official"
+
+- name: setup docker-ce aliyun repository
+  block:
+    - name: setup centos7 docker-ce aliyun repository
+      command: yum-config-manager --add-repo {{ docker_aliyun_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce aliyun repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_aliyun_repo }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+  when: docker_repo == "aliyun"
+
+- name: setup docker-ce tuna repository
+  block:
+    - name: setup centos7 docker-ce tuna repository
+      command: yum-config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce tuna repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+    - name: replace to tuna docker-ce repository address
+      command: sed -i 's+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+      notify: yum makecache
+
+  when: docker_repo == "tuna"
+
+- name: force all notified handlers to run at this point
+  meta: flush_handlers

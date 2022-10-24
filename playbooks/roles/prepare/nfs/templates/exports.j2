@@ -1,2 +1,2 @@
 {{ NFS_PATH }} {{ ansible_facts['default_ipv4']['network'] }}/{{ ansible_facts['default_ipv4']['netmask'] }}(rw,sync,insecure,no_subtree_check,no_root_squash)
-{{ NFS_PATH }} {{ CLUSTER_CIDR }}(rw,sync,insecure,no_subtree_check,no_root_squash)
+{{ NFS_PATH }} {{ POD_CIDR }}(rw,sync,insecure,no_subtree_check,no_root_squash)

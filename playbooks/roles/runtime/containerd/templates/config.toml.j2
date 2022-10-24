@@ -1,0 +1,61 @@
+# https://github.com/containerd/containerd/blob/main/docs/man/containerd-config.toml.5.md
+version = 2
+
+root = "/var/lib/containerd"
+state = "/run/containerd"
+oom_score = 0
+imports = []
+
+[grpc]
+  address = "/run/containerd/containerd.sock"
+  uid = 0
+  gid = 0
+
+[debug]
+  address = "/run/containerd/debug.sock"
+  uid = 0
+  gid = 0
+  level = "info"
+
+[metrics]
+  address = ""
+  grpc_histogram = false
+
+[cgroup]
+  path = ""
+
+[plugins]
+
+  [plugins."io.containerd.grpc.v1.cri"]
+    sandbox_image = "{{ K8S_IMAGE_REPOSITORY }}/pause:{{ CONTAINERD_PAUSE_VER }}"
+
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      default_runtime_name = "runc"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+            SystemdCgroup = true
+
+    [plugins."io.containerd.grpc.v1.cri".registry]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ REGISTRY_SERVICE }}".tls]
+          insecure_skip_verify = true
+
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ REGISTRY_SERVICE }}"]
+          endpoint = {{ CONTAINERD_INSECURE_REGISTRIES|to_json }}
+
+{% for registry, addresses in REGISTRY_MIRRORS.items() %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry }}"]
+          endpoint = {{ addresses|to_json }}
+
+{% endfor %}

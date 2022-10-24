@@ -193,7 +193,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: kubernetes-dashboard
-          image: {{ LOCAL_REGISTRY }}/kubernetesui/dashboard:v{{ DASHBOARD_VER }}
+          image: {{ REGISTRY_SERVICE }}/kubernetesui/dashboard:v{{ DASHBOARD_VER }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8443
@@ -276,7 +276,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: dashboard-metrics-scraper
-          image: {{ LOCAL_REGISTRY }}/kubernetesui/metrics-scraper:v{{ METRICS_SCRAPER_VER }}
+          image: {{ REGISTRY_SERVICE }}/kubernetesui/metrics-scraper:v{{ METRICS_SCRAPER_VER }}
           ports:
             - containerPort: 8000
               protocol: TCP

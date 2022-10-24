@@ -1,7 +1,7 @@
 ---
-- name: restart and enable docker
+- name: restart and enable containerd
   systemd:
     daemon_reload: yes
     enabled: yes
-    name: docker
+    name: containerd
     state: restarted

@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-    - image: {{ LOCAL_REGISTRY }}/osixia/keepalived:{{ KEEPALIVED_VER }}
+    - image: {{ REGISTRY_SERVICE }}/osixia/keepalived:{{ KEEPALIVED_VER }}
       name: keepalived
       resources: {}
       securityContext:

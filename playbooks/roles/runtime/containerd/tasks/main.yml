@@ -1,14 +1,14 @@
 ---
-- name: check if docker is installed
-  shell: where docker || echo "NotFound"
-  register: docker_installed
+- name: check if containerd is installed
+  shell: where containerd || echo "NotFound"
+  register: containerd_installed
 
 - block:
     # https://github.com/ansible/ansible/issues/71808
     # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
-    - name: install docker-ce
+    - name: install containerd
       yum:
-        name: docker-ce-{{ DOCKER_VER }}
+        name: containerd.io-{{ CONTAINERD_VER }}
         state: present
       # https://docs.ansible.com/ansible/latest/user_guide/playbooks_async.html
       # https://stackoverflow.com/questions/41194021/how-can-i-show-progress-for-a-long-running-ansible-task
@@ -16,7 +16,7 @@
       poll: 0
       register: yum_sleeper
 
-    - name: whether docker has completed the installation
+    - name: whether containerd has completed the installation
       async_status:
         jid: "{{ yum_sleeper.ansible_job_id }}"
       register: job_result
@@ -24,22 +24,30 @@
       retries: 60
       delay: 10
 
-  when: '"NotFound" in docker_installed.stdout'
+  when: '"NotFound" in containerd_installed.stdout'
 
-- name: create docker config directory
+- name: create containerd config directory
   file:
-    path: /etc/docker
+    path: /etc/containerd
     state: directory
 
-- name: create docker config
+- name: create containerd config
   template:
     # https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html
-    src: daemon.json.j2
-    dest: /etc/docker/daemon.json
+    src: config.toml.j2
+    dest: /etc/containerd/config.toml
     owner: root
     group: root
-    mode: 0600
-  notify: restart and enable docker
+    mode: 0644
+  notify: restart and enable containerd
+
+- name: create crictl config
+  template:
+    src: crictl.yaml.j2
+    dest: /etc/crictl.yaml
+    owner: root
+    group: root
+    mode: 0644
 
 - name: force all notified handlers to run at this point
   meta: flush_handlers

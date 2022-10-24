@@ -26,5 +26,5 @@
   register: flannel_status
   until: flannel_status.stdout_lines|unique|list == ['Running']
   retries: 60
-  delay: 60
+  delay: 10
   ignore_errors: true

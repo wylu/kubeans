@@ -1,31 +1,52 @@
 ---
+- hosts: k8s:registry_server
+  any_errors_fatal: true
+  roles:
+    - role: runtime/common
+
 - hosts: k8s
   any_errors_fatal: true
+  gather_facts: false
   roles:
     - role: runtime/docker
       when: CONTAINER_RUNTIME == "docker"
 
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: runtime/containerd
+      when: CONTAINER_RUNTIME == "containerd"
+
 # https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
-- hosts: k8s:local_registry_server
+- hosts: k8s:registry_server
   any_errors_fatal: true
   gather_facts: false
   roles:
     - role: runtime/hosts
 
-# use an external existing local registry server
-- hosts: local_registry_server
+# use an external existing registry server
+- hosts: registry_server
   any_errors_fatal: true
   gather_facts: false
   roles:
+    # 使用 docker 搭建私有镜像仓库
+    - role: runtime/docker
+      when: ('registry_server' in groups)
+        and (groups.registry_server|length > 0)
     - role: runtime/registry
-      when: ('local_registry_server' in groups)
-        and (groups.local_registry_server|length > 0)
+      when: ('registry_server' in groups)
+        and (groups.registry_server|length > 0)
 
-# make k8s_master[0] as a local registry server
+# make k8s_master[0] as a registry server
 - hosts: k8s_master[0]
   any_errors_fatal: true
   gather_facts: false
   roles:
+    # 使用 docker 搭建私有镜像仓库
+    - role: runtime/docker
+      when: ('registry_server' not in groups)
+        or (groups.registry_server|length == 0)
     - role: runtime/registry
-      when: ('local_registry_server' not in groups)
-        or (groups.local_registry_server|length == 0)
+      when: ('registry_server' not in groups)
+        or (groups.registry_server|length == 0)

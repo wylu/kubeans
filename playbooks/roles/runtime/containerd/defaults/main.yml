@@ -1,0 +1,8 @@
+---
+# CRI socket path
+cri_socket: >-
+  {%- if CONTAINER_RUNTIME == 'containerd' -%}
+  /var/run/containerd/containerd.sock
+  {%- else -%}
+  /var/run/dockershim.sock
+  {%- endif -%}

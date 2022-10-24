@@ -1,0 +1,62 @@
+# sysctl settings are defined through files in
+# /usr/lib/sysctl.d/, /run/sysctl.d/, and /etc/sysctl.d/.
+#
+# Vendors settings live in /usr/lib/sysctl.d/.
+# To override a whole file, create a new file with the same in
+# /etc/sysctl.d/ and put new settings there. To override
+# only specific settings, add a file with a lexically later
+# name in /etc/sysctl.d/ and put new settings there.
+#
+# For more information, see sysctl.conf(5) and sysctl.d(5).
+
+# https://blog.csdn.net/wo18237095579/article/details/110007882
+# Linux系统级别限制所有用户进程能打开的文件描述符总数
+fs.file-max=6553600
+# 指定 inotify 实例可以排队事件数量的上限
+fs.inotify.max_queued_events = 1048576
+# 指定每个真实用户 ID 可以创建的 inotify 实例数量上限
+fs.inotify.max_user_instances = 1048576
+# refer to https://github.com/Azure/AKS/issues/772
+fs.inotify.max_user_watches = 1048576
+# 单个进程可分配的最大文件数
+fs.nr_open=6553600
+
+# https://www.opcai.top/post/2022/2022-02/linux_sysctl.d/
+kernel.hung_task_panic=0
+kernel.hung_task_timeout_secs=3600
+kernel.panic_on_oops=5
+kernel.softlockup_panic=0
+kernel.sysrq=1
+
+# 定义了系统中每一个端口最大的监听队列的长度，这是个全局的参数，默认值为 128
+net.core.somaxconn=1024
+# 容器要想访问外部网络，需要本地系统的转发支持
+net.ipv4.ip_forward=1
+# https://help.aliyun.com/knowledge_detail/41334.html
+# 定义所能接受 SYN 同步包的最大客户端数量，即半连接上限
+net.ipv4.tcp_max_syn_backlog=8192
+# bridge-nf 使得 netfilter 可以对 Linux 网桥上的 IPv4/ARP/IPv6 包过滤。
+# 比如，设置 net.bridge.bridge-nf-call-iptables=1 后，二层的网桥
+# 在转发包时也会被 iptables 的 FORWARD 规则所过滤。
+# refer to https://www.qikqiak.com/k8strain/k8s-basic/install/
+# 是否在 arptables 的 FORWARD 中过滤网桥的 ARP 包
+net.bridge.bridge-nf-call-arptables= 1
+# 是否在 iptables 链中过滤 IPv4 包
+net.bridge.bridge-nf-call-iptables=1
+# 是否在 ip6tables 链中过滤 IPv6 包
+net.bridge.bridge-nf-call-ip6tables=1
+# 服务器在访问量很大时，出现网络连接丢包的问题
+# 比较现代的系统（Ubuntu 16+, CentOS 7+）里，64 位，16G 内存的机器，
+# max 通常默认为 524288，
+# bucket 为 131072（在 sunrpc.conf 文件中修改）。
+# 随着内存大小翻倍这 2 个值也翻倍。
+# refer to https://testerhome.com/topics/15824
+net.netfilter.nf_conntrack_max=524288
+
+vm.oom_dump_tasks=1
+#值为 0：内存不足时，启动 OOM killer。
+#值为 1：内存不足时，有可能会触发 kernel panic（系统重启），也有可能启动 OOM killer。
+#值为 2：内存不足时，表示强制触发 kernel panic，内核崩溃（系统重启）。
+vm.panic_on_oom=0
+# 最大限度使用物理内存
+vm.swappiness=0
