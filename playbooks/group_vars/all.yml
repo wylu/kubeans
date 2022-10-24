@@ -47,10 +47,10 @@ CONTAINERD_INSECURE_REGISTRIES:
 CONTAINERD_PAUSE_VER: "3.7"
 
 ############################
-# role:kube-master
+# role:kube-master [1.23.*, 1.24.*, 1.25.*]
 ############################
 # kubernetes 版本
-K8S_VER: "1.23.6"
+K8S_VER: "1.25.2"
 # kubernetes 组件镜像加速地址
 K8S_IMAGE_REPOSITORY: "registry.aliyuncs.com/google_containers"
 

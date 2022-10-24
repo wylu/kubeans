@@ -36,4 +36,4 @@
     msg:
       - "Dashboard listen on {{ address }}"
       - "Use following command to get access token of admin-user."
-      - "kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret|grep admin-user|awk '{print $1}')"
+      - "kubectl -n kubernetes-dashboard describe secret admin-user"
