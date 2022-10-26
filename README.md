@@ -31,6 +31,8 @@
     - [nfs-provisioner](#nfs-provisioner)
     - [prometheus](#prometheus)
     - [dashboard](#dashboard)
+  - [第三方应用](#第三方应用)
+    - [harbor](#harbor)
   - [kubernetes 测试](#kubernetes-测试)
     - [测试域名解析](#测试域名解析)
       - [dig 测试](#dig-测试)
@@ -59,6 +61,7 @@
 | k8s_worker      | worker03 | 10.128.170.23  | 1.23.6 |
 | ansible_client  | client00 | 10.128.170.230 |        |
 | registry_server | registry | 10.128.170.235 |        |
+| harbor_server   |  harbor  | 10.128.170.235 |        |
 | nfs_server      |   nfs    | 10.128.170.235 |        |
 
 - k8s_master 是集群的控制节点
@@ -66,6 +69,7 @@
 - 非高可用模式下，最少只需要两个机器就可以部署一个 k8s 集群
 - ansible_client 是 ansible 的控制节点，用于部署 k8s 集群，它不是必需的，你可以在 ansible_client 节点执行部署命令，也可以在任意一个 k8s_master 节点上执行部署命令
 - registry_server 是本地镜像仓库节点，用于加速集群部署镜像下载，它不是必需的，如果想要使用已有的本地镜像仓库，可以在清单文件中指定
+- harbor_server 是 harbor 镜像仓库节点，用于提供企业级容器镜像管理服务，它不是必需的，如果想要安装和使用 harbor，需要在清单文件中提供配置然后执行安装命令
 - nfs 是网络文件系统，允许系统将其目录和文件共享给网络上的其他系统，它不是必需的，启用 k8s 集群扩展 nfs-provisioner 时需要指定 nfs 服务器地址
 
 ## 支持系统
@@ -326,8 +330,7 @@ metrics-server-6bb4988d74-s95c7         4m           21Mi
 ### nfs-provisioner
 
 - 默认不启用 nfs-provisioner 扩展
-- 若要启用 nfs-provisioner 扩展需要设置 `NFS_PROVISIONER_ENABLE: "yes"`
-- 同时还需要设置 host.ini 中的 `NFS_SERVER` 和 `NFS_PATH`
+- 若要启用 nfs-provisioner 扩展需要设置 `NFS_PROVISIONER_ENABLE: "yes"`，同时还需要设置 host.ini 中的 `NFS_SERVER` 和 `NFS_PATH`
 
 **启用 nfs-provisioner 扩展至少需要一个 nfs 服务器，用于提供底层存储，其中 `NFS_SERVER` 是 nfs 服务器地址，`NFS_PATH` 是共享目录。**
 
@@ -338,8 +341,7 @@ metrics-server-6bb4988d74-s95c7         4m           21Mi
 ### prometheus
 
 - 默认不启用 prometheus 扩展
-- 若要启用 prometheus 扩展需要设置 `PROMETHEUS_ENABLE: "yes"`
-- 同时还需要启用 helm 扩展，因为 prometheus 需要使用 helm 进行安装
+- 若要启用 prometheus 扩展需要设置 `PROMETHEUS_ENABLE: "yes"`，同时还需要启用 helm 扩展，因为 prometheus 需要使用 helm 进行安装
 
 访问 web 界面：
 
@@ -364,6 +366,27 @@ metrics-server-6bb4988d74-s95c7         4m           21Mi
   ```
 
 **其中 MasterNodeIP 为任意 master 节点 IP，在高可用模式下，MasterNodeIP 还可以是 `APISERVER_VIP` 配置的 IP。**
+
+## 第三方应用
+
+### harbor
+
+**注意：安装 harbor 前要先完成 k8s 集群的安装。**
+
+- 默认不安装 harbor
+- 若要安装 harbor，则需要在 hosts.ini 中配置 harbor_server，然后执行以下安装命令
+
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/81.harbor.yml
+  ```
+
+**harbor 安装后，ansible 会自动配置 k8s 集群，使其能够使用 harbor 相关服务。**
+
+访问 web 界面：
+
+- harbor: <https://HarborServerIP:8443/> （默认账号/密码 admin/Harbor12345）
+
+**其中 HarborServerIP 为 harbor 服务器 IP。**
 
 ## kubernetes 测试
 

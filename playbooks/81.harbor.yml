@@ -1,0 +1,75 @@
+---
+- hosts: k8s:harbor_server
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - set_fact:
+        harbor_config: >-
+          {{
+            ("harbor_server" in groups) and
+            (groups.harbor_server|length > 0)
+          }}
+      run_once: true
+      delegate_to: localhost
+
+- hosts: harbor_server
+  any_errors_fatal: true
+  tasks:
+    - block:
+        - name: check if harbor is installed
+          shell: ls /opt/data/harbor || echo "NotFound"
+          register: result
+        - set_fact:
+            harbor_installed: >-
+              {{
+                ("NotFound" not in result.stdout) and
+                ("registry" in result.stdout)
+              }}
+      when: harbor_config
+
+    - block:
+        - include_role:
+            name: prepare/base
+        - include_role:
+            name: prepare/centos
+          when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
+        - include_role:
+            name: prepare/ntp
+        - include_role:
+            name: runtime/common
+        - include_role:
+            name: runtime/docker
+        - include_role:
+            name: harbor/install
+      when: harbor_config and not harbor_installed
+
+    - name: fetch the harbor server's CA cert
+      fetch:
+        src: /opt/data/harbor/ssl/ca.crt
+        dest: /tmp/
+        flat: yes
+      when: harbor_config
+
+- hosts: k8s:harbor_server
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: harbor/hosts
+      when: harbor_config
+
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: harbor/enable
+      when: harbor_config
+
+- hosts: harbor_server
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - name: show harbor web address
+      debug:
+        msg: >-
+          harbor listen on https://{{ ansible_host }}:{{ HARBOR_PORT }}/
+          (default username/password is admin/Harbor12345)

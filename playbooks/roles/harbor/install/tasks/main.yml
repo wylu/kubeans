@@ -1,0 +1,137 @@
+---
+- block:
+    - name: create /opt/data/harbor directory
+      file:
+        path: /opt/data/harbor
+        state: directory
+        mode: 0755
+    - name: check if harbor is installed
+      command: ls /opt/data/harbor
+      register: result
+    - set_fact:
+        harbor_installed: '{{ "registry" in result.stdout }}'
+
+# https://docs.docker.com/compose/install/linux/#install-using-the-repository
+- block:
+    - name: install docker-compose-plugin
+      yum:
+        name: docker-compose-plugin-{{ DOCKER_COMPOSE_PLUGIN_VER }}
+        state: present
+
+    - name: create docker-compose command
+      blockinfile:
+        path: /etc/profile
+        block: "alias docker-compose='docker compose'"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK docker-compose"
+        insertafter: EOF
+
+  when: not harbor_installed
+
+# https://goharbor.io/docs/2.6.0/install-config/configure-https/
+- block:
+    - name: create /opt/data/harbor/ssl directory
+      file:
+        path: /opt/data/harbor/ssl
+        state: directory
+
+    # Generate a Certificate Authority Certificate
+    - name: generate a CA certificate private key
+      shell: >-
+        cd /opt/data/harbor/ssl &&
+        openssl genrsa -out ca.key 4096
+
+    - name: generate the CA certificate
+      shell: >-
+        cd /opt/data/harbor/ssl &&
+        openssl req -x509 -new -nodes -sha512 -days 36500
+        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=k8s/OU=System/CN={{ HARBOR_HOST }}"
+        -key ca.key
+        -out ca.crt
+
+    # Generate a Server Certificate
+    - name: generate a private key
+      shell: >-
+        cd /opt/data/harbor/ssl &&
+        openssl genrsa -out {{ HARBOR_HOST }}.key 4096
+
+    - name: generate a certificate signing request (CSR)
+      shell: >-
+        cd /opt/data/harbor/ssl &&
+        openssl req -sha512 -new
+        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=k8s/OU=System/CN={{ HARBOR_HOST }}"
+        -key {{ HARBOR_HOST }}.key
+        -out {{ HARBOR_HOST }}.csr
+
+    - name: generate an x509 v3 extension file
+      shell: |
+        cd /opt/data/harbor/ssl &&
+        cat > v3.ext <<-EOF
+        authorityKeyIdentifier=keyid,issuer
+        basicConstraints=CA:FALSE
+        keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+        extendedKeyUsage = serverAuth
+        subjectAltName = @alt_names
+
+        [alt_names]
+        IP.1={{ ansible_host }}
+        DNS.1={{ HARBOR_HOST }}
+        DNS.2={{ inventory_hostname }}
+        EOF
+
+    - name: use the v3.ext file to generate a certificate for harbor server
+      shell: >-
+        cd /opt/data/harbor/ssl &&
+        openssl x509 -req -sha512 -days 3650
+        -extfile v3.ext
+        -CA ca.crt -CAkey ca.key -CAcreateserial
+        -in {{ HARBOR_HOST }}.csr
+        -out {{ HARBOR_HOST }}.crt
+
+  when: not harbor_installed
+
+# https://goharbor.io/docs/2.6.0/install-config/configure-yml-file/
+- block:
+    - name: copy harbor-online-installer-v{{ HARBOR_VER }}.tgz to harbor server
+      copy:
+        src: harbor-online-installer-v{{ HARBOR_VER }}.tgz
+        dest: /opt/data/harbor
+
+    - name: extract harbor-online-installer-v{{ HARBOR_VER }}.tgz
+      shell: >-
+        cd /opt/data/harbor &&
+        tar -zxf harbor-online-installer-v{{ HARBOR_VER }}.tgz
+
+    - name: prepare harbor config file
+      template:
+        src: harbor-v{{ HARBOR_VER }}.yml.j2
+        dest: /opt/data/harbor/harbor/harbor.yml
+
+    - set_fact: install_options="{{ install_options }} --with-notary"
+      when: HARBOR_WITH_NOTARY|bool
+
+    - set_fact: install_options="{{ install_options }} --with-trivy"
+      when: HARBOR_WITH_TRIVY|bool
+
+    - set_fact: install_options="{{ install_options }} --with-chartmuseum"
+      when: HARBOR_WITH_CHARTMUSEUM|bool
+
+    - debug: var="install_options"
+
+    - name: install harbor
+      shell: >-
+        cd /opt/data/harbor/harbor &&
+        ./install.sh {{ install_options }} >>
+        /tmp/harbor-`date +'%Y%m%d%H%M%S'`.log 2>&1
+      async: 3000
+      poll: 0
+      register: shell_sleeper
+
+    - name: whether harbor has completed the installation
+      async_status:
+        jid: "{{ shell_sleeper.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 200
+      delay: 10
+
+  when: not harbor_installed

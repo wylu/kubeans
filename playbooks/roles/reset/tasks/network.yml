@@ -27,9 +27,16 @@
     - cni0
     - kube-ipvs0
 
-- name: remove added hosts information
+- name: remove node hosts information
   blockinfile:
     path: /etc/hosts
     state: absent
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
-  with_items: "{{ (groups.all + ['ntp', 'registry'])|unique }}"
+  with_items: "{{ groups.all }}"
+
+- name: remove ntp hosts information
+  blockinfile:
+    path: /etc/hosts
+    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}.ntp.local"
+  with_items: "{{ groups.k8s_master }}"

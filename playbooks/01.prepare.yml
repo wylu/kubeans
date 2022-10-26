@@ -12,4 +12,5 @@
     - role: prepare/hosts
     - role: prepare/centos
       when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
+    - role: prepare/ntp
     - role: prepare/reboot

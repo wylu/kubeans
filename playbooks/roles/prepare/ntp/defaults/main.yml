@@ -1,0 +1,4 @@
+---
+ntp_pools:
+  - 2.centos.pool.ntp.org iburst
+ntp_servers: []

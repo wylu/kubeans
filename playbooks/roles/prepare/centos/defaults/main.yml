@@ -11,6 +11,7 @@ centos7_utilities:
   - libseccomp # 安装 containerd 需要
   - net-tools
   - nfs-utils # 启用 nfs-provisioner 扩展需要
+  - openssl
   - openssh
   - python36
   - socat # 用于 port forwarding
@@ -24,6 +25,7 @@ rocky8_utilities:
   - libseccomp # 安装 containerd 需要
   - net-tools
   - nfs-utils # 启用 nfs-provisioner 扩展需要
+  - openssl
   - openssh
-  - socat # 用于 port forwarding
   - python36
+  - socat # 用于 port forwarding

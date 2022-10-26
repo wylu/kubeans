@@ -20,5 +20,3 @@
 - include_tasks: utilities.yml
 
 - include_tasks: pypi.yml
-
-- include_tasks: ntp.yml

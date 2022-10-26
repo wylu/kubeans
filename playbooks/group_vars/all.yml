@@ -7,9 +7,6 @@
 # 节点基础环境准备完成后是否自动重启系统
 REBOOT: "no"
 
-# 本地 ntp 服务器地址
-NTP_HOST: "ntp.local"
-
 ############################
 # role:runtime [docker, containerd]
 ############################
@@ -37,6 +34,7 @@ DOCKER_VER: "20.10.17"
 # [docker] 信任的 HTTP 仓库
 DOCKER_INSECURE_REGISTRIES:
   - "{{ REGISTRY_SERVICE }}"
+DOCKER_COMPOSE_PLUGIN_VER: "2.12.0"
 
 # [containerd]
 CONTAINERD_VER: "1.6.8"
@@ -120,3 +118,17 @@ PROMETHEUS_NAMESPACE: "monitoring"
 DASHBOARD_ENABLE: "yes"
 DASHBOARD_VER: "2.6.1"
 METRICS_SCRAPER_VER: "1.0.8"
+
+############################
+# role:harbor
+############################
+HARBOR_VER: "2.6.1"
+HARBOR_HOST: "harbor.local"
+# tls port
+HARBOR_PORT: "8443"
+# install with notary service
+HARBOR_WITH_NOTARY: false
+# install with trivy service
+HARBOR_WITH_TRIVY: false
+# install with chart repository service
+HARBOR_WITH_CHARTMUSEUM: true

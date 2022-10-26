@@ -7,7 +7,7 @@
   yum:
     name: chrony
     state: present
-  notify: restart chronyd
+  notify: restart and enable chronyd
 
 - name: create chrony.d directory
   file:
@@ -18,12 +18,13 @@
   template:
     src: server.conf.j2
     dest: /etc/chrony.d/server.conf
+  notify: restart and enable chronyd
 
 - name: copy chronyd config
   copy:
     src: chrony.conf
     dest: /etc
-  notify: restart chronyd
+  notify: restart and enable chronyd
 
 - name: force all notified handlers to run at this point
   meta: flush_handlers

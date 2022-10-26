@@ -48,7 +48,11 @@
             name: prepare/centos
           when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
         - include_role:
+            name: prepare/ntp
+        - include_role:
             name: prepare/reboot
+        - include_role:
+            name: runtime/common
         - include_role:
             name: runtime/containerd
           when: CONTAINER_RUNTIME == "containerd"
@@ -64,3 +68,5 @@
         - include_role:
             name: k8s_worker/join
       when: inventory_hostname not in workers
+
+- import_playbook: 81.harbor.yml

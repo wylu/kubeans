@@ -18,10 +18,3 @@
 
 - name: upgrade pip
   command: python3 -m pip install --upgrade pip
-
-- name: restart chronyd
-  systemd:
-    name: chronyd
-    daemon_reload: true
-    state: restarted
-    enabled: true

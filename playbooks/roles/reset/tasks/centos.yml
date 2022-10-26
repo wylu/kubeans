@@ -24,10 +24,19 @@
       - kubeadm
       - kubectl
       - kubelet
+      - docker-compose-plugin
       - docker-ce
       - containerd.io
       - chrony
     state: absent
+
+- name: remove /etc/profile related settings
+  blockinfile:
+    path: /etc/profile
+    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+  with_items:
+    - docker-compose
 
 - name: remove kubernetes related files
   file:
@@ -51,6 +60,7 @@
     - /etc/systemd/system/kubelet.service.d
     - /opt/cni
     - /opt/containerd
+    - /opt/data
     # - /run/calico
     - /run/flannel
     - /run/containerd

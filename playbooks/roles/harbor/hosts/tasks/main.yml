@@ -1,0 +1,19 @@
+---
+- name: set_fact harbor_server
+  set_fact:
+    harbor_server: "{{ hostvars[groups.harbor_server.0]['ansible_host'] }}"
+  run_once: true
+  delegate_to: localhost
+
+- name: show harbor_server
+  debug:
+    msg: "{{ harbor_server }}"
+  run_once: true
+  delegate_to: localhost
+
+- name: setup {{ HARBOR_HOST }} hosts
+  blockinfile:
+    path: /etc/hosts
+    block: "{{ harbor_server }} {{ HARBOR_HOST }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK harbor"
+    insertafter: EOF

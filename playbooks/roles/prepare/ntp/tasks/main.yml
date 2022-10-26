@@ -1,0 +1,34 @@
+---
+- include_tasks: chrony.yml
+  when: inventory_hostname not in groups.k8s_worker
+
+- set_fact:
+    hosts: |-
+      {%- set hosts = [] -%}
+      {%- for host in groups['k8s_master'] -%}
+        {{ hosts.append({'host': host, 'ip': hostvars[host]['ansible_host']}) }}
+      {%- endfor -%}
+      {{- hosts -}}
+  run_once: true
+  delegate_to: localhost
+
+- block:
+    - name: setup local ntp server hosts
+      blockinfile:
+        path: /etc/hosts
+        block: "{{ item.ip }} {{ item.host }}.ntp.local"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.host }}.ntp.local"
+        insertafter: EOF
+      with_items: "{{ hosts }}"
+
+    - include_tasks: chrony.yml
+      vars:
+        ntp_pools: []
+        ntp_servers: |-
+          {%- set ntp_servers = [] -%}
+          {%- for item in hosts -%}
+            {{ ntp_servers.append(item.host + '.ntp.local iburst') }}
+          {%- endfor -%}
+          {{- ntp_servers -}}
+
+  when: inventory_hostname in groups.k8s_worker
