@@ -89,6 +89,24 @@
 
   when: not harbor_installed
 
+- block:
+    - name: create cert dir for the docker daemon
+      file:
+        path: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_PORT }}
+        state: directory
+
+    - name: install the harbor server's CA cert for docker
+      copy:
+        src: /opt/data/harbor/ssl/ca.crt
+        dest: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_PORT }}/ca.crt
+
+    - name: restart docker
+      service:
+        name: docker
+        state: restarted
+
+  when: not harbor_installed
+
 # https://goharbor.io/docs/2.6.0/install-config/configure-yml-file/
 - block:
     - name: copy harbor-online-installer-v{{ HARBOR_VER }}.tgz to harbor server

@@ -42,6 +42,10 @@
       - [创建 deployment](#创建-deployment)
     - [测试 nodelocaldns](#测试-nodelocaldns)
     - [测试动态 pv](#测试动态-pv)
+    - [测试 harbor](#测试-harbor)
+      - [推送镜像到 harbor 仓库](#推送镜像到-harbor-仓库)
+      - [测试集群使用 harbor 仓库](#测试集群使用-harbor-仓库)
+      - [管理维护 harbor 服务](#管理维护-harbor-服务)
   - [附录](#附录)
     - [关闭 swap](#关闭-swap)
     - [合并 /home 分区到 / 分区](#合并-home-分区到--分区)
@@ -189,7 +193,9 @@ systemctl restart NetworkManager
 chmod +x setup_ansible.sh && ./setup_ansible.sh --ssh-password "root password"
 ```
 
-该脚本将会安装 ansible，同时设置节点间免密登录。
+- 该脚本将会安装 ansible，同时设置节点间免密登录。
+- 该脚本默认读取当前目录的 hosts.ini 清单文件，你可以使用 `-i` 参数指定其它清单文件，例如：`-i examples/hosts.multiple-master.ini`。
+- 查看详细帮助文档：`./setup_ansible.sh -h`
 
 ### 一键部署
 
@@ -456,15 +462,17 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   namespace: dev
+  labels:
+    app: nginx
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx-pod
+      app: nginx
   template:
     metadata:
       labels:
-        app: nginx-pod
+        app: nginx
     spec:
       containers:
       - name: nginx
@@ -490,7 +498,7 @@ metadata:
   namespace: dev
 spec:
   selector:
-    app: nginx-pod
+    app: nginx
   type: NodePort
   ports:
   - port: 80
@@ -672,6 +680,183 @@ test-claim   Bound    pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de   2Mi        RWX 
 ```
 
 如上，可以发现挂载的时候，nfs-client 根据 PVC 自动创建了一个目录，我们 Pod 中挂载的 `/mnt`，实际引用的就是该目录，而我们在 `/mnt` 下创建的 `SUCCESS` 文件，也自动写入到了这里。
+
+### 测试 harbor
+
+<https://github.com/easzlab/kubeasz/blob/master/docs/guide/harbor.md>
+
+#### 推送镜像到 harbor 仓库
+
+**你可以在任意一个安装了 docker 的机器上进行以下测试，只要它能够连接 harbor 服务器，根据你的实际情况，你可能需要手动配置 /etc/hosts。**
+
+拉取 nginx 镜像：
+
+```shell
+[root@loaclhost ~]# docker pull nginx:latest
+latest: Pulling from library/nginx
+e9995326b091: Pull complete
+71689475aec2: Pull complete
+f88a23025338: Pull complete
+0df440342e26: Pull complete
+eef26ceb3309: Pull complete
+8e3ed6a9e43a: Pull complete
+Digest: sha256:943c25b4b66b332184d5ba6bb18234273551593016c0e0ae906bab111548239f
+Status: Downloaded newer image for nginx:latest
+docker.io/library/nginx:latest
+```
+
+给 nginx 镜像打 tag：
+
+```shell
+[root@loaclhost ~]# docker tag nginx:latest harbor.local:8443/library/nginx:latest
+[root@loaclhost ~]# docker images
+REPOSITORY                        TAG       IMAGE ID       CREATED       SIZE
+nginx                             latest    76c69feac34e   2 days ago    142MB
+harbor.local:8443/library/nginx   latest    76c69feac34e   2 days ago    142MB
+...
+```
+
+登录 harbor：
+
+```shell
+[root@loaclhost ~]# docker login harbor.local:8443
+Username: admin
+Password:
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+```
+
+登录时如果提示如下错误：
+
+```shell
+[root@loaclhost ~]# docker login harbor.local:8443
+Username: admin
+Password:
+Error response from daemon: Get "https://harbor.local:8443/v2/": x509: certificate signed by unknown authority
+```
+
+则需要设置 docker 信任该 CA 证书机构，具体操作如下：
+
+<https://docs.docker.com/engine/security/certificates/>
+
+- 创建受信任的 CA 证书目录
+
+  ```shell
+  mkdir -p /etc/docker/certs.d/harbor.local:8443
+  ```
+
+  其中 `harbor.local:8443` 需要根据实际部署 harbor 的配置进行调整。
+
+- 拷贝 harbor 的 CA 证书到上面创建的目录下
+
+  ```shell
+  cp /opt/data/harbor/ssl/ca.crt /etc/docker/certs.d/harbor.local\:8443
+  ```
+
+  使用本工具安装的 harbor，默认 CA 证书在对应服务器的 /opt/data/harbor/ssl 目录下。
+  如果你是在其它机器的 docker 上操作，那么你需要通过 scp 命令或其它手段将 harbor 的 CA 证书拷贝到相应目录。
+
+- 重启 docker
+
+  ```shell
+  systemctl restart docker
+  ```
+
+推送镜像到 harbor：
+
+```shell
+[root@loaclhost ~]# docker push harbor.local:8443/library/nginx:latest
+The push refers to repository [harbor.local:8443/library/nginx]
+a2e59a79fae0: Pushed
+4091cd312f19: Pushed
+9e7119c28877: Pushed
+2280b348f4d6: Pushed
+e74d0d8d2def: Pushed
+a12586ed027f: Pushed
+latest: digest: sha256:06aa2038b42f1502b59b3a862b1f5980d3478063028d8e968f0810b9b0502380 size: 1570
+```
+
+#### 测试集群使用 harbor 仓库
+
+**你可以在任意一个 k8s_master 节点执行以下测试。**
+
+```shell
+[root@master01 ~]# cat > ~/nginx-deployment.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: harbor.local:8443/library/nginx:latest
+        ports:
+        - containerPort: 80
+EOF
+
+[root@master01 ~]# kubectl apply -f ~/nginx-deployment.yaml
+deployment.apps/nginx-deployment created
+
+[root@master01 ~]# kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-7c997c9c5d-6h22t   1/1     Running   0          29s
+
+[root@master01 ~]# kubectl get event
+LAST SEEN   TYPE     REASON              OBJECT                                   MESSAGE
+2m12s       Normal   Scheduled           pod/nginx-deployment-7c997c9c5d-6h22t    Successfully assigned default/nginx-deployment-7c997c9c5d-6h22t to worker03
+2m11s       Normal   Pulling             pod/nginx-deployment-7c997c9c5d-6h22t    Pulling image "harbor.local:8443/library/nginx:latest"
+2m5s        Normal   Pulled              pod/nginx-deployment-7c997c9c5d-6h22t    Successfully pulled image "harbor.local:8443/library/nginx:latest" in 5.589854087s
+2m5s        Normal   Created             pod/nginx-deployment-7c997c9c5d-6h22t    Created container nginx
+2m5s        Normal   Started             pod/nginx-deployment-7c997c9c5d-6h22t    Started container nginx
+2m12s       Normal   SuccessfulCreate    replicaset/nginx-deployment-7c997c9c5d   Created pod: nginx-deployment-7c997c9c5d-6h22t
+2m12s       Normal   ScalingReplicaSet   deployment/nginx-deployment              Scaled up replica set nginx-deployment-7c997c9c5d to 1
+```
+
+#### 管理维护 harbor 服务
+
+常规操作如下：
+
+- 暂停 harbor（docker 容器 stop，并不删除容器）
+
+  ```shell
+  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml stop
+  ```
+
+- 恢复 harbor（恢复 docker 容器运行）
+
+  ```shell
+  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml start
+  ```
+
+- 停止 harbor（停止并删除 docker 容器）
+
+  ```shell
+  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml down -v
+  ```
+
+- 启动 harbor（创建并运行 docker 容器）
+
+  ```shell
+  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml up -d
+  ```
+
+**提示：你可以直接进入到 harbor 安装目录 /opt/data/harbor/harbor 执行命令，这样你就不必每次使用 `-f` 参数指定 docker-compose 配置文件了。**
+
+查看详细帮助文档：`docker-compose -h`
 
 ## 附录
 
