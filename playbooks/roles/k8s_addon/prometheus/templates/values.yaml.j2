@@ -90,8 +90,13 @@ kubeProxy:
 {% for host in groups['k8s_master'] %}
     - {{ hostvars[host]['ansible_host'] }}
 {% endfor %}
+{% if remove_worker %}
+  {%- set nodes = nodes|split(',')|unique -%}
+{% endif %}
 {% for host in groups['k8s_worker'] %}
+{% if not remove_worker or host not in nodes %}
     - {{ hostvars[host]['ansible_host'] }}
+{% endif %}
 {% endfor %}
 
 ## Configuration for kube-state-metrics subchart

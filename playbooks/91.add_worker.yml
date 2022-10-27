@@ -67,4 +67,11 @@
             name: k8s_worker/join
       when: inventory_hostname not in workers
 
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: k8s_addon/prometheus
+      when: PROMETHEUS_ENABLE == "yes"
+
 - import_playbook: 81.harbor.yml

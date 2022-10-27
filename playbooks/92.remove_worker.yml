@@ -47,3 +47,12 @@
           service_facts:
         - include_tasks: roles/reset/tasks/kubelet.yml
       when: inventory_hostname in workers
+
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - role: k8s_addon/prometheus
+      vars:
+        remove_worker: true
+      when: PROMETHEUS_ENABLE == "yes"
