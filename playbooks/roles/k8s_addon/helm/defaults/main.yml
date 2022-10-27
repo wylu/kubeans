@@ -1,2 +1,3 @@
 ---
+# options: ["official", "huaweicloud"]
 helm_repo: huaweicloud

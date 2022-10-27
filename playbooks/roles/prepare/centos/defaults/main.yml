@@ -1,5 +1,8 @@
 ---
+# Centos 7 options: ["official", "aliyun", "tuna"]
+# Rocky 8 options: ["official", "aliyun", "nju"]
 repo_mirrors: aliyun
+# options: ["aliyun", "tuna"]
 pypi_source: aliyun
 
 centos7_utilities:

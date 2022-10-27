@@ -1,2 +1,3 @@
 ---
+# options: ["official", "aliyun", "tuna"]
 k8s_repo: aliyun

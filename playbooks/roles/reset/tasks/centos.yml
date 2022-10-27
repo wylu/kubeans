@@ -30,6 +30,14 @@
       - chrony
     state: absent
 
+- name: remove ~/.bashrc related settings
+  blockinfile:
+    path: ~/.bashrc
+    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+  with_items:
+    - kubectl
+
 - name: remove /etc/profile related settings
   blockinfile:
     path: /etc/profile

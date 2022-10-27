@@ -32,7 +32,7 @@
 
 - name: create local registry data directory
   file:
-    path: /opt/data/docker/registry
+    path: /opt/data
     state: directory
 
 - name: check if local registry is running
@@ -44,13 +44,14 @@
     tail -n +2
   register: check_result
 
+# https://docs.docker.com/registry/deploying/
 - name: run local registry
   shell: >-
     docker run -d
     --name registry
     --publish 5000:5000
     --restart always
-    --volume /opt/data/docker/registry:/var/lib/registry
+    --volume /opt/data:/var/lib/registry
     registry:{{ REGISTRY_VER }}
   when: check_result.stdout == ""
 

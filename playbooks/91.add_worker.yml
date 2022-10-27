@@ -43,8 +43,6 @@
         - include_role:
             name: prepare/base
         - include_role:
-            name: prepare/hosts
-        - include_role:
             name: prepare/centos
           when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
         - include_role:

@@ -127,8 +127,8 @@ HARBOR_HOST: "harbor.local"
 # tls port
 HARBOR_PORT: "8443"
 # install with notary service
-HARBOR_WITH_NOTARY: false
+HARBOR_WITH_NOTARY: "no"
 # install with trivy service
-HARBOR_WITH_TRIVY: false
+HARBOR_WITH_TRIVY: "no"
 # install with chart repository service
-HARBOR_WITH_CHARTMUSEUM: true
+HARBOR_WITH_CHARTMUSEUM: "yes"

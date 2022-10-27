@@ -8,8 +8,8 @@
 - hosts: k8s
   any_errors_fatal: true
   roles:
-    - role: prepare/base
     - role: prepare/hosts
+    - role: prepare/base
     - role: prepare/centos
       when: ansible_facts["distribution"] in ["CentOS", "Rocky"]
     - role: prepare/ntp

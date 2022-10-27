@@ -44,7 +44,7 @@
       shell: >-
         cd /opt/data/harbor/ssl &&
         openssl req -x509 -new -nodes -sha512 -days 36500
-        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=k8s/OU=System/CN={{ HARBOR_HOST }}"
+        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=Kubeans/OU=System/CN={{ HARBOR_HOST }}"
         -key ca.key
         -out ca.crt
 
@@ -58,7 +58,7 @@
       shell: >-
         cd /opt/data/harbor/ssl &&
         openssl req -sha512 -new
-        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=k8s/OU=System/CN={{ HARBOR_HOST }}"
+        -subj "/C=CN/ST=GuangDong/L=ShenZhen/O=Kubeans/OU=System/CN={{ HARBOR_HOST }}"
         -key {{ HARBOR_HOST }}.key
         -out {{ HARBOR_HOST }}.csr
 
@@ -107,13 +107,13 @@
         dest: /opt/data/harbor/harbor/harbor.yml
 
     - set_fact: install_options="{{ install_options }} --with-notary"
-      when: HARBOR_WITH_NOTARY|bool
+      when: HARBOR_WITH_NOTARY == "yes"
 
     - set_fact: install_options="{{ install_options }} --with-trivy"
-      when: HARBOR_WITH_TRIVY|bool
+      when: HARBOR_WITH_TRIVY == "yes"
 
     - set_fact: install_options="{{ install_options }} --with-chartmuseum"
-      when: HARBOR_WITH_CHARTMUSEUM|bool
+      when: HARBOR_WITH_CHARTMUSEUM == "yes"
 
     - debug: var="install_options"
 

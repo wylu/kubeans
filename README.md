@@ -661,9 +661,9 @@ test-claim   Bound    pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de   2Mi        RWX 
 另外，Pod 启动完成后，会在挂载的目录中创建一个 `SUCCESS` 文件。我们可以到 NFS 服务器去看下：
 
 ```shell
-[root@loaclhost nfs]# pwd
+[root@localhost nfs]# pwd
 /opt/data/nfs
-[root@loaclhost nfs]# tree
+[root@localhost nfs]# tree
 .
 └── default-test-claim-pvc-1395d76c-ea04-4deb-bcb2-f18eb1a726de
     └── SUCCESS
