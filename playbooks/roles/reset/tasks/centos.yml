@@ -36,6 +36,7 @@
     state: absent
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
   with_items:
+    - crictl
     - kubectl
 
 - name: remove /etc/profile related settings

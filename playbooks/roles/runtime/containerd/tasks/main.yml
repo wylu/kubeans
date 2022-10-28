@@ -49,5 +49,12 @@
     group: root
     mode: 0644
 
+- name: setup crictl bash completion
+  blockinfile:
+    path: ~/.bashrc
+    block: "source <(crictl completion bash)"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK crictl"
+    insertafter: EOF
+
 - name: force all notified handlers to run at this point
   meta: flush_handlers
