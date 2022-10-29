@@ -1,0 +1,21 @@
+---
+- block:
+    - name: check if harbor is installed
+      command: ls /opt/data/harbor
+      register: result
+    - set_fact:
+        harbor_installed: '{{ "registry" in result.stdout }}'
+
+- block:
+    - name: stop harbor compose
+      shell: >-
+        cd /opt/data/harbor/harbor &&
+        docker compose down -v
+
+    - name: remove harbor data
+      shell: >-
+        rm -rf /opt/data/harbor &&
+        rm -rf /var/log/harbor &&
+        rm -rf /tmp/harbor-*.log
+
+  when: harbor_installed

@@ -74,4 +74,4 @@
     - role: k8s_addon/prometheus
       when: PROMETHEUS_ENABLE == "yes"
 
-- import_playbook: 81.harbor.yml
+- import_playbook: 81.install_harbor.yml

@@ -1,0 +1,34 @@
+---
+- hosts: harbor_server
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - set_fact:
+        harbor_config: >-
+          {{
+            ("harbor_server" in groups) and
+            (groups.harbor_server|length > 0)
+          }}
+      run_once: true
+      delegate_to: localhost
+
+- hosts: harbor_server
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - block:
+        - name: check if harbor is installed
+          shell: ls /opt/data/harbor || echo "NotFound"
+          register: result
+        - set_fact:
+            harbor_installed: >-
+              {{
+                ("NotFound" not in result.stdout) and
+                ("registry" in result.stdout)
+              }}
+      when: harbor_config
+
+    - block:
+        - include_role:
+            name: harbor/uninstall
+      when: harbor_config and harbor_installed
