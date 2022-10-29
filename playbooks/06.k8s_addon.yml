@@ -1,9 +1,9 @@
 ---
-- hosts: ansible_client
+- hosts: k8s_master:ansible_client
   any_errors_fatal: true
   roles:
     - role: prepare/nfs
-      when: nfs_server == "yes"
+      when: nfs_server is defined and nfs_server == "yes"
 
 - hosts: k8s_master
   any_errors_fatal: true

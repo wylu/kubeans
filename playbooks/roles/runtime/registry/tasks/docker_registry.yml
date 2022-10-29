@@ -48,7 +48,7 @@
 - name: run local registry
   shell: >-
     docker run -d
-    --name registry
+    --name registry.local
     --publish 5000:5000
     --restart always
     --volume /opt/data:/var/lib/registry
@@ -117,7 +117,7 @@
       local_repository: "dns/k8s-dns-node-cache"
       enable: "{{ NODELOCALDNS_ENABLE|default('no', true) }}"
 
-    - repository: "{{ K8S_IMAGE_REPOSITORY }}/metrics-server"
+    - repository: "{{ K8S_MIRRORS['k8s.gcr.io'] }}/metrics-server"
       tag: "v{{ METRICES_SERVER_VER }}"
       local_repository: "metrics-server/metrics-server"
       enable: "{{ METRICES_SERVER_ENABLE|default('no', true) }}"
@@ -139,27 +139,27 @@
       tag: "8.5.3"
       local_repository: "prometheus/grafana"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/kiwigrid/k8s-sidecar
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/kiwigrid/k8s-sidecar"
       tag: "1.15.6"
       local_repository: "prometheus/k8s-sidecar"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/prometheus-operator/prometheus-config-reloader
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/prometheus-operator/prometheus-config-reloader"
       tag: "v0.56.3"
       local_repository: "prometheus/prometheus-config-reloader"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/prometheus-operator/prometheus-operator
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/prometheus-operator/prometheus-operator"
       tag: "v0.56.3"
       local_repository: "prometheus/prometheus-operator"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/prometheus/alertmanager
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/prometheus/alertmanager"
       tag: "v0.24.0"
       local_repository: "prometheus/alertmanager"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/prometheus/node-exporter
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/prometheus/node-exporter"
       tag: "v1.3.1"
       local_repository: "prometheus/node-exporter"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"
-    - repository: quay.io/prometheus/prometheus
+    - repository: "{{ K8S_MIRRORS['quay.io'] }}/prometheus/prometheus"
       tag: "v2.35.0"
       local_repository: "prometheus/prometheus"
       enable: "{{ PROMETHEUS_ENABLE|default('no', true) }}"

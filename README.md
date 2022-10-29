@@ -828,7 +828,9 @@ LAST SEEN   TYPE     REASON              OBJECT                                 
 
 #### 管理维护 harbor 服务
 
-常规操作如下：
+<https://goharbor.io/docs/2.6.0/install-config/reconfigure-manage-lifecycle/>
+
+暂停与恢复：
 
 - 暂停 harbor（docker 容器 stop，并不删除容器）
 
@@ -842,21 +844,45 @@ LAST SEEN   TYPE     REASON              OBJECT                                 
   docker-compose -f /opt/data/harbor/harbor/docker-compose.yml start
   ```
 
+**提示：你可以直接进入到 harbor 安装目录 /opt/data/harbor/harbor 执行命令，这样你就不必每次使用 `-f` 参数指定 docker-compose 配置文件了。**
+
+更新 compose 配置：
+
+- 进入 harbor 安装目录
+
+  ```shell
+  cd /opt/data/harbor/harbor
+  ```
+
 - 停止 harbor（停止并删除 docker 容器）
 
   ```shell
-  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml down -v
+  docker-compose down -v
+  ```
+
+- 更新 harbor.yml 配置文件
+
+- 生成新的 docker-compose.yml 配置文件
+
+  ```shell
+  ./prepare
+  ```
+
+  或者
+
+  ```shell
+  ./prepare --with-notary --with-trivy --with-chartmuseum
   ```
 
 - 启动 harbor（创建并运行 docker 容器）
 
   ```shell
-  docker-compose -f /opt/data/harbor/harbor/docker-compose.yml up -d
+  docker-compose up -d
   ```
 
-**提示：你可以直接进入到 harbor 安装目录 /opt/data/harbor/harbor 执行命令，这样你就不必每次使用 `-f` 参数指定 docker-compose 配置文件了。**
+查看详细帮助文档：
 
-查看详细帮助文档：`docker-compose -h`
+- `docker-compose -h`
 
 ## 附录
 

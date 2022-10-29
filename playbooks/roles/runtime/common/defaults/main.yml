@@ -1,5 +1,10 @@
 ---
-# options: ["official", "aliyun", "tuna"]
-docker_repo: aliyun
 docker_official_repo: https://download.docker.com/linux/centos/docker-ce.repo
 docker_aliyun_repo: http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+docker_builtin_options:
+  - "official"
+  - "aliyun"
+  - "tuna"
+  - "ustc"
+DOCKER_REPO: aliyun

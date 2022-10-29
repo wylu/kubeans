@@ -24,7 +24,7 @@ apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-imageRepository: {{ K8S_IMAGE_REPOSITORY }}
+imageRepository: {{ K8S_MIRRORS['k8s.gcr.io'] }}
 kubernetesVersion: {{ K8S_VER }}
 {% if HA_ENABLE == 'yes' %}
 controlPlaneEndpoint: {{ APISERVER_VIP }}:{{ APISERVER_VPORT }}

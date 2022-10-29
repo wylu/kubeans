@@ -22,12 +22,12 @@ REGISTRY_MIRRORS:
     - "https://mirror.baidubce.com"
     - "https://hub-mirror.c.163.com"
     - "https://docker.mirrors.ustc.edu.cn"
-  gcr.io:
-    - "https://gcr.mirrors.ustc.edu.cn"
+  # gcr.io:
+  #   - "https://gcr.mirrors.ustc.edu.cn"
   k8s.gcr.io:
-    - "https://gcr.mirrors.ustc.edu.cn/google-containers"
+    - "https://registry.aliyuncs.com/google_containers"
   quay.io:
-    - "https://quay.mirrors.ustc.edu.cn"
+    - "https://quay-mirror.qiniu.com"
 
 # [docker]
 DOCKER_VER: "20.10.17"
@@ -50,7 +50,13 @@ CONTAINERD_PAUSE_VER: "3.7"
 # kubernetes 版本
 K8S_VER: "1.25.2"
 # kubernetes 组件镜像加速地址
-K8S_IMAGE_REPOSITORY: "registry.aliyuncs.com/google_containers"
+K8S_MIRRORS:
+  # google container registry
+  gcr.io: "gcr.io"
+  # 等同于 gcr.io/google-containers
+  k8s.gcr.io: "registry.aliyuncs.com/google_containers"
+  # redhat 运营的镜像库
+  quay.io: "quay.io"
 
 # 高可用模式依赖 haproxy, keepalived
 # [haproxy]
@@ -124,8 +130,8 @@ METRICS_SCRAPER_VER: "1.0.8"
 ############################
 HARBOR_VER: "2.6.1"
 HARBOR_HOST: "harbor.local"
-# tls port
-HARBOR_PORT: "8443"
+HARBOR_HTTP_PORT: "1080"
+HARBOR_HTTPS_PORT: "8443"
 # install with notary service
 HARBOR_WITH_NOTARY: "no"
 # install with trivy service

@@ -3,7 +3,7 @@
   file:
     path: ~/.config/pip
     state: absent
-  when: pypi_source == "official"
+  when: PYPI_SOURCE == "official"
 
 - name: setup aliyun pypi source
   block:
@@ -20,7 +20,7 @@
         dest: ~/.config/pip/pip.conf
       notify: upgrade pip
 
-  when: pypi_source == "aliyun"
+  when: PYPI_SOURCE == "aliyun"
 
 - name: setup tuna pypi source
   block:
@@ -37,7 +37,41 @@
         dest: ~/.config/pip/pip.conf
       notify: upgrade pip
 
-  when: pypi_source == "tuna"
+  when: PYPI_SOURCE == "tuna"
+
+- name: setup ustc pypi source
+  block:
+    - name: create pypi config directory
+      file:
+        path: ~/.config/pip
+        state: directory
+
+    - name: setup ustc pip.conf
+      vars:
+        pypi_url: https://mirrors.ustc.edu.cn/pypi/web/simple
+      template:
+        src: pip.conf.j2
+        dest: ~/.config/pip/pip.conf
+      notify: upgrade pip
+
+  when: PYPI_SOURCE == "ustc"
+
+- name: setup custom pypi source
+  block:
+    - name: create pypi config directory
+      file:
+        path: ~/.config/pip
+        state: directory
+
+    - name: setup custom pip.conf
+      vars:
+        pypi_url: "{{ PYPI_SOURCE }}"
+      template:
+        src: pip.conf.j2
+        dest: ~/.config/pip/pip.conf
+      notify: upgrade pip
+
+  when: PYPI_SOURCE not in pypi_builtin_options
 
 - name: force all notified handlers to run at this point
   meta: flush_handlers

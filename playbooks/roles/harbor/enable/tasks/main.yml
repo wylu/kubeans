@@ -2,7 +2,7 @@
 - block:
     - block:
         - name: check if harbor is enabled
-          command: ls /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_PORT }}
+          command: ls /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_HTTPS_PORT }}
           register: result
         - set_fact:
             harbor_enabled: '{{ "ca.crt" in result.stdout }}'
@@ -10,12 +10,12 @@
     - block:
         - name: create cert dir for the docker daemon
           file:
-            path: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_PORT }}
+            path: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_HTTPS_PORT }}
             state: directory
         - name: install the harbor server's CA cert for docker
           copy:
             src: /tmp/ca.crt
-            dest: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_PORT }}/ca.crt
+            dest: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_HTTPS_PORT }}/ca.crt
         - name: restart docker
           service:
             name: docker

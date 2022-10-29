@@ -34,7 +34,7 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "official"
+  when: DNF_SOURCE == "official"
 
 - name: setup aliyun repository
   block:
@@ -71,7 +71,7 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "aliyun"
+  when: DNF_SOURCE == "aliyun"
 
 - name: setup nju repository
   block:
@@ -108,7 +108,81 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "nju"
+  when: DNF_SOURCE == "nju"
+
+- name: setup ustc repository
+  block:
+    - name: setup Rocky-AppStream ustc repository
+      yum_repository:
+        name: appstream
+        description: Rocky Linux $releasever - AppStream
+        baseurl: https://mirrors.ustc.edu.cn/rocky/$releasever/AppStream/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-AppStream
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-BaseOS ustc repository
+      yum_repository:
+        name: baseos
+        description: Rocky Linux $releasever - BaseOS
+        baseurl: https://mirrors.ustc.edu.cn/rocky/$releasever/BaseOS/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-BaseOS
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-Extras ustc repository
+      yum_repository:
+        name: extras
+        description: Rocky Linux $releasever - Extras
+        baseurl: https://mirrors.ustc.edu.cn/rocky/$releasever/extras/$basearch/os/
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-Extras
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+  notify:
+    - yum clean all
+    - yum makecache
+  when: DNF_SOURCE == "ustc"
+
+- name: setup custom repository
+  block:
+    - name: setup Rocky-AppStream custom repository
+      yum_repository:
+        name: appstream
+        description: Rocky Linux $releasever - AppStream
+        baseurl: "{{ DNF_SOURCE }}/$releasever/AppStream/$basearch/os/"
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-AppStream
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-BaseOS custom repository
+      yum_repository:
+        name: baseos
+        description: Rocky Linux $releasever - BaseOS
+        baseurl: "{{ DNF_SOURCE }}/$releasever/BaseOS/$basearch/os/"
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-BaseOS
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+    - name: setup Rocky-Extras custom repository
+      yum_repository:
+        name: extras
+        description: Rocky Linux $releasever - Extras
+        baseurl: "{{ DNF_SOURCE }}/$releasever/extras/$basearch/os/"
+        gpgcheck: yes
+        enabled: yes
+        file: Rocky-Extras
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+        state: present
+  notify:
+    - yum clean all
+    - yum makecache
+  when: DNF_SOURCE not in dnf_builtin_options
 
 - name: install epel-release
   dnf:

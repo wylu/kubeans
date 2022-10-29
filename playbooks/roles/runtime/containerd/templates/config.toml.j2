@@ -27,7 +27,7 @@ imports = []
 [plugins]
 
   [plugins."io.containerd.grpc.v1.cri"]
-    sandbox_image = "{{ K8S_IMAGE_REPOSITORY }}/pause:{{ CONTAINERD_PAUSE_VER }}"
+    sandbox_image = "{{ K8S_MIRRORS['k8s.gcr.io'] }}/pause:{{ CONTAINERD_PAUSE_VER }}"
 
     [plugins."io.containerd.grpc.v1.cri".containerd]
       default_runtime_name = "runc"

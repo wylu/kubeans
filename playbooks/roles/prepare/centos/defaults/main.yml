@@ -1,9 +1,24 @@
 ---
-# Centos 7 options: ["official", "aliyun", "tuna"]
-# Rocky 8 options: ["official", "aliyun", "nju"]
-repo_mirrors: aliyun
-# options: ["aliyun", "tuna"]
-pypi_source: aliyun
+yum_builtin_options:
+  - "official"
+  - "aliyun"
+  - "tuna"
+  - "ustc"
+YUM_SOURCE: aliyun
+
+dnf_builtin_options:
+  - "official"
+  - "aliyun"
+  - "nju"
+  - "ustc"
+DNF_SOURCE: aliyun
+
+pypi_builtin_options:
+  - "official"
+  - "aliyun"
+  - "tuna"
+  - "ustc"
+PYPI_SOURCE: aliyun
 
 centos7_utilities:
   - bash-completion # bash命令补全工具

@@ -1,3 +1,8 @@
 ---
-# options: ["official", "aliyun", "tuna"]
-k8s_repo: aliyun
+k8s_builtin_options:
+  - "official"
+  - "aliyun"
+  - "tuna"
+  - "ustc"
+  - "huaweicloud"
+K8S_REPO: aliyun

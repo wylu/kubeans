@@ -29,7 +29,7 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "official"
+  when: YUM_SOURCE == "official"
 
 - name: setup CentOS-Base aliyun repository
   yum_repository:
@@ -61,7 +61,7 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "aliyun"
+  when: YUM_SOURCE == "aliyun"
 
 - name: setup CentOS-Base tuna repository
   yum_repository:
@@ -93,7 +93,71 @@
   notify:
     - yum clean all
     - yum makecache
-  when: repo_mirrors == "tuna"
+  when: YUM_SOURCE == "tuna"
+
+- name: setup CentOS-Base ustc repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      baseurl: https://mirrors.ustc.edu.cn/centos/$releasever/os/$basearch/
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      baseurl: https://mirrors.ustc.edu.cn/centos/$releasever/updates/$basearch/
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      baseurl: https://mirrors.ustc.edu.cn/centos/$releasever/extras/$basearch/
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      baseurl: https://mirrors.ustc.edu.cn/centos/$releasever/centosplus/$basearch/
+      enabled: no
+  notify:
+    - yum clean all
+    - yum makecache
+  when: YUM_SOURCE == "ustc"
+
+- name: setup CentOS-Base custom repository
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}"
+    gpgcheck: yes
+    enabled: "{{ item.enabled }}"
+    file: CentOS-Base
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    state: present
+  with_items:
+    - name: base
+      description: CentOS-$releasever - Base
+      baseurl: "{{ YUM_SOURCE }}/$releasever/os/$basearch/"
+      enabled: yes
+    - name: updates
+      description: CentOS-$releasever - Updates
+      baseurl: "{{ YUM_SOURCE }}/$releasever/updates/$basearch/"
+      enabled: yes
+    - name: extras
+      description: CentOS-$releasever - Extras
+      baseurl: "{{ YUM_SOURCE }}/$releasever/extras/$basearch/"
+      enabled: yes
+    - name: centosplus
+      description: CentOS-$releasever - Plus
+      baseurl: "{{ YUM_SOURCE }}/$releasever/centosplus/$basearch/"
+      enabled: no
+  notify:
+    - yum clean all
+    - yum makecache
+  when: YUM_SOURCE not in yum_builtin_options
 
 - name: install epel-release
   yum:

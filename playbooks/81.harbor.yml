@@ -73,5 +73,5 @@
     - name: show harbor web address
       debug:
         msg: >-
-          harbor listen on https://{{ ansible_host }}:{{ HARBOR_PORT }}/
+          harbor listen on https://{{ ansible_host }}:{{ HARBOR_HTTPS_PORT }}/
           (default username/password is admin/Harbor12345)

@@ -11,7 +11,7 @@
     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     state: present
   notify: yum makecache
-  when: k8s_repo == "official"
+  when: K8S_REPO == "official"
 
 # https://developer.aliyun.com/mirror/kubernetes
 - name: setup aliyun kubernetes repository
@@ -25,7 +25,7 @@
     gpgkey: https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
     state: present
   notify: yum makecache
-  when: k8s_repo == "aliyun"
+  when: K8S_REPO == "aliyun"
 
 # https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/
 - name: setup tuna kubernetes repository
@@ -38,7 +38,44 @@
     file: kubernetes
     state: present
   notify: yum makecache
-  when: k8s_repo == "tuna"
+  when: K8S_REPO == "tuna"
+
+- name: setup ustc kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://mirrors.ustc.edu.cn/kubernetes/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: no
+    enabled: yes
+    file: kubernetes
+    state: present
+  notify: yum makecache
+  when: K8S_REPO == "ustc"
+
+- name: setup huaweicloud kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://repo.huaweicloud.com/kubernetes/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: yes
+    enabled: yes
+    file: kubernetes
+    gpgkey: https://repo.huaweicloud.com/kubernetes/yum/doc/yum-key.gpg https://repo.huaweicloud.com/kubernetes/yum/doc/rpm-package-key.gpg
+    state: present
+  notify: yum makecache
+  when: K8S_REPO == "huaweicloud"
+
+- name: setup custom kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: "{{ K8S_REPO }}"
+    gpgcheck: no
+    enabled: yes
+    file: kubernetes
+    state: present
+  notify: yum makecache
+  when: K8S_REPO not in k8s_builtin_options
 
 # http://www.jinbuguo.com/systemd/systemd.slice.html
 # http://www.jinbuguo.com/systemd/systemd.resource-control.html

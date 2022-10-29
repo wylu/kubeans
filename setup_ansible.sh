@@ -14,6 +14,21 @@ INVENTORY=$CURRENT/hosts.ini
 # ssh 连接密码
 SSH_PASSWORD=
 
+# yum 软件源
+YUM_SOURCE=http://mirrors.aliyun.com
+#YUM_SOURCE=https://mirrors.tuna.tsinghua.edu.cn
+#YUM_SOURCE=https://mirrors.ustc.edu.cn/centos
+
+# dnf 软件源
+DNF_SOURCE=https://mirrors.aliyun.com/rockylinux
+#DNF_SOURCE=https://mirrors.nju.edu.cn/rocky
+#DNF_SOURCE=https://mirrors.ustc.edu.cn/rocky
+
+# pypi 源
+PYPI_SOURCE=https://mirrors.aliyun.com/pypi/simple
+#PYPI_SOURCE=https://pypi.tuna.tsinghua.edu.cn/simple
+#PYPI_SOURCE=https://mirrors.ustc.edu.cn/pypi/web/simple
+
 function logger() {
     TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
     case "$1" in
@@ -60,15 +75,9 @@ function setup_repo() {
         if ! compgen -G "/etc/yum.repos.d/CentOS-*.repo.bak" >/dev/null; then
             # shellcheck disable=SC2016
             sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-                -e 's|^#baseurl=http://mirror.centos.org|baseurl=http://mirrors.aliyun.com|g' \
+                -e "s|^#baseurl=http://mirror.centos.org|baseurl=$YUM_SOURCE|g" \
                 -i.bak \
                 /etc/yum.repos.d/CentOS-*.repo
-
-            # shellcheck disable=SC2016
-            # sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-            #     -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
-            #     -i.bak \
-            #     /etc/yum.repos.d/CentOS-*.repo
 
             yum makecache
         fi
@@ -78,15 +87,9 @@ function setup_repo() {
         if ! compgen -G "/etc/yum.repos.d/Rocky-*.repo.bak" >/dev/null; then
             # shellcheck disable=SC2016
             sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-                -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.aliyun.com/rockylinux|g' \
+                -e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=$DNF_SOURCE|g" \
                 -i.bak \
                 /etc/yum.repos.d/Rocky-*.repo
-
-            # shellcheck disable=SC2016
-            # sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-            #     -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.nju.edu.cn/rocky|g' \
-            #     -i.bak \
-            #     /etc/yum.repos.d/Rocky-*.repo
 
             dnf makecache
         fi
@@ -151,12 +154,8 @@ function setup_ansible() {
             python3-pip
 
         # ansible [core 2.11.12]
-        pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -U pip
-        pip3 install -i https://mirrors.aliyun.com/pypi/simple/ ansible==4.10.0
-
-        # ansible [core 2.11.12]
-        # pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -U pip
-        # pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple ansible==4.10.0
+        pip3 install -i $PYPI_SOURCE -U pip
+        pip3 install -i $PYPI_SOURCE ansible==4.10.0
         ;;
     *)
         logger info "" && logger error "Unsupported distribution '$lsb_dist'"
@@ -245,18 +244,11 @@ function setup_sshkey() {
     logger info "************************ Setup sshkey End ***********************"
 }
 
-function varify_inventory() {
-    local inventory=$1
-    if [[ -z "${inventory}" ]]; then
-        logger error '"INVENTORY" can not be empty!'
-        exit 1
-    fi
-}
-
-function varify_ssh_password() {
-    local ssh_password=$1
-    if [[ -z "${ssh_password}" ]]; then
-        logger error '"SSH_PASSWORD" can not be empty!'
+function varify_empty() {
+    local key=$1
+    local value=$2
+    if [[ -z "${value}" ]]; then
+        logger error "The value of \"$key\" can not be empty!"
         exit 1
     fi
 }
@@ -269,14 +261,24 @@ function script_usage() {
 Usage:
     ${BASH_SOURCE[0]} --ssh-password "root password"
 
-      -h|--help                             Displays this help
-
-    Optional:
-      -v|--verbose                          Displays verbose output
-      -i|--inventory                        Specify inventory host path
+      -h|--help                             Display this help
 
     Required:
-         --ssh-password SSH_PASSWORD        SSH password of root user
+         --ssh-password password            SSH password of root user
+
+    Optional:
+      -v|--verbose                          Display verbose output
+      -i|--inventory inventory              Specify inventory host path
+         --yum-source url                   Specify yum mirror source
+         --dnf-source url                   Specify dnf mirror source
+         --pypi-source url                  Specify pypi mirror source
+
+Example:
+    ${BASH_SOURCE[0]} --ssh-password "root password" \\
+        --inventory examples/hosts.multiple-master.ini \\
+        --dnf-source https://mirrors.ustc.edu.cn/rocky \\
+        --pypi-source https://mirrors.ustc.edu.cn/pypi/web/simple
+
 EOF
 }
 
@@ -293,14 +295,7 @@ function parse_params() {
             script_usage
             exit 0
             ;;
-        -v | --verbose)
-            VERBOSE=true
-            ;;
-        -i | --inventory)
-            INVENTORY="${1-}"
-            varify_inventory "$INVENTORY"
-            shift
-            ;;
+
         --ssh-password)
             # https://unix.stackexchange.com/questions/463034/bash-throws-error-line-8-1-unbound-variable
             # In particular, one could use [ -n "${1-}" ]
@@ -308,9 +303,34 @@ function parse_params() {
             # if the parameter is set and non-empty;
             # or [ "${1+x}" = x ] to see if it's set, even if empty.
             SSH_PASSWORD="${1-}"
-            varify_ssh_password "$SSH_PASSWORD"
+            varify_empty "--ssh-password" "$SSH_PASSWORD"
             shift
             ;;
+
+        -v | --verbose)
+            VERBOSE=true
+            ;;
+        -i | --inventory)
+            INVENTORY="${1-}"
+            varify_empty "--inventory" "$INVENTORY"
+            shift
+            ;;
+        --yum-source)
+            YUM_SOURCE="${1-}"
+            varify_empty "--yum-source" "$YUM_SOURCE"
+            shift
+            ;;
+        --dnf-source)
+            DNF_SOURCE="${1-}"
+            varify_empty "--dnf-source" "$DNF_SOURCE"
+            shift
+            ;;
+        --pypi-source)
+            PYPI_SOURCE="${1-}"
+            varify_empty "--pypi-source" "$PYPI_SOURCE"
+            shift
+            ;;
+
         *)
             logger error "Invalid parameter was provided: $param"
             exit 1

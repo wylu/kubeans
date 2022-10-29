@@ -1,3 +1,5 @@
 ---
-# options: ["official", "huaweicloud"]
-helm_repo: huaweicloud
+helm_builtin_options:
+  - "official"
+  - "huaweicloud"
+helm_url: huaweicloud

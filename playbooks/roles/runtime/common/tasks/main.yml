@@ -16,7 +16,7 @@
         - ansible_facts["distribution"] == "Rocky"
         - ansible_facts["distribution_major_version"] == "8"
 
-  when: docker_repo == "official"
+  when: DOCKER_REPO == "official"
 
 - name: setup docker-ce aliyun repository
   block:
@@ -35,7 +35,7 @@
         - ansible_facts["distribution"] == "Rocky"
         - ansible_facts["distribution_major_version"] == "8"
 
-  when: docker_repo == "aliyun"
+  when: DOCKER_REPO == "aliyun"
 
 - name: setup docker-ce tuna repository
   block:
@@ -53,10 +53,81 @@
         - ansible_facts["distribution_major_version"] == "8"
 
     - name: replace to tuna docker-ce repository address
-      command: sed -i 's+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+      command: >-
+        sed -i 's+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+'
+        /etc/yum.repos.d/docker-ce.repo
       notify: yum makecache
 
-  when: docker_repo == "tuna"
+  when: DOCKER_REPO == "tuna"
+
+- name: setup docker-ce ustc repository
+  block:
+    - name: setup centos7 docker-ce ustc repository
+      command: yum-config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce ustc repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+    - name: replace to ustc docker-ce repository address
+      command: >-
+        sed -i 's+download.docker.com+mirrors.ustc.edu.cn/docker-ce+'
+        /etc/yum.repos.d/docker-ce.repo
+      notify: yum makecache
+
+  when: DOCKER_REPO == "ustc"
+
+- name: setup docker-ce custom http(s) repository
+  block:
+    - name: setup centos7 docker-ce custom http(s) repository
+      command: yum-config-manager --add-repo {{ DOCKER_REPO }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce custom http(s) repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ DOCKER_REPO }}
+      notify: yum makecache
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+  when:
+    - DOCKER_REPO not in docker_builtin_options
+    - '"http" in DOCKER_REPO'
+
+- name: setup docker-ce custom replace repository
+  block:
+    - name: setup centos7 docker-ce custom replace repository
+      command: yum-config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == "7"
+
+    - name: setup rocky8 docker-ce custom replace repository
+      # https://github.com/ansible/ansible/issues/46963
+      command: dnf config-manager --add-repo {{ docker_official_repo }}
+      when:
+        - ansible_facts["distribution"] == "Rocky"
+        - ansible_facts["distribution_major_version"] == "8"
+
+    - name: replace to custom replace docker-ce repository address
+      command: >-
+        sed -i 's+download.docker.com+{{ DOCKER_REPO }}+'
+        /etc/yum.repos.d/docker-ce.repo
+      notify: yum makecache
+
+  when:
+    - DOCKER_REPO not in docker_builtin_options
+    - '"http" not in DOCKER_REPO'
 
 - name: force all notified handlers to run at this point
   meta: flush_handlers
