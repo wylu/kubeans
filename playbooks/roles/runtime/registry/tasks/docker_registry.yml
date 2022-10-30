@@ -40,7 +40,7 @@
   # https://www.cnblogs.com/didispace/p/12524194.html
   shell: >-
     set -o pipefail &&
-    docker ps --filter name=registry |
+    docker ps --filter name={{ registry_container_name }} |
     tail -n +2
   register: check_result
 
@@ -48,7 +48,7 @@
 - name: run local registry
   shell: >-
     docker run -d
-    --name registry.local
+    --name {{ registry_container_name }}
     --publish 5000:5000
     --restart always
     --volume /opt/data:/var/lib/registry

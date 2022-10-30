@@ -88,7 +88,10 @@
   copy:
     src: system
     dest: /etc/systemd
-  notify: enable kubernetes.slice
+  notify:
+    - enable kubernetes.slice
+    - restart and enable containerd
+    - restart and enable docker
 
 - name: force all notified handlers to run at this point
   meta: flush_handlers

@@ -1,5 +1,16 @@
 ---
 - block:
+    - name: install the harbor server's CA cert on k8s nodes
+      copy:
+        src: /tmp/ca.crt
+        dest: /etc/pki/ca-trust/source/anchors/harbor-ca.crt
+      notify:
+        - update trusted ca-certificates
+        - restart containerd
+
+  when: CONTAINER_RUNTIME == "containerd"
+
+- block:
     - name: create cert dir for the docker daemon
       file:
         path: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_HTTPS_PORT }}
@@ -9,26 +20,9 @@
       copy:
         src: /tmp/ca.crt
         dest: /etc/docker/certs.d/{{ HARBOR_HOST }}:{{ HARBOR_HTTPS_PORT }}/ca.crt
-
-    - name: restart docker
-      service:
-        name: docker
-        state: restarted
+      notify: restart docker
 
   when: CONTAINER_RUNTIME == "docker"
 
-- block:
-    - name: install the harbor server's CA cert on k8s nodes
-      copy:
-        src: /tmp/ca.crt
-        dest: /etc/pki/ca-trust/source/anchors/harbor-ca.crt
-
-    - name: update the trusted ca-certificates
-      command: update-ca-trust
-
-    - name: restart containerd
-      service:
-        name: containerd
-        state: restarted
-
-  when: CONTAINER_RUNTIME == "containerd"
+- name: force all notified handlers to run at this point
+  meta: flush_handlers

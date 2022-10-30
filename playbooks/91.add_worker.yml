@@ -67,6 +67,7 @@
             name: k8s_worker/join
       when: inventory_hostname not in workers
 
+# 集群节点有增减，重新执行安装命令以更新 prometheus 监控主机配置
 - hosts: k8s_master[0]
   any_errors_fatal: true
   gather_facts: false
@@ -74,4 +75,5 @@
     - role: k8s_addon/prometheus
       when: PROMETHEUS_ENABLE == "yes"
 
+# 拷贝 harbor CA 证书到新增节点
 - import_playbook: 81.install_harbor.yml

@@ -65,7 +65,7 @@
 | k8s_worker      | worker01 | 10.128.170.21  | 1.23.6 |
 | k8s_worker      | worker02 | 10.128.170.22  | 1.23.6 |
 | k8s_worker      | worker03 | 10.128.170.23  | 1.23.6 |
-| ansible_client  | client00 | 10.128.170.230 |        |
+| ansible_client  | ansible  | 10.128.170.230 |        |
 | registry_server | registry | 10.128.170.235 |        |
 | harbor_server   |  harbor  | 10.128.170.235 |        |
 | nfs_server      |   nfs    | 10.128.170.235 |        |

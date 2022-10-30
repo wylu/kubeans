@@ -48,6 +48,21 @@
         - include_tasks: roles/reset/tasks/kubelet.yml
       when: inventory_hostname in workers
 
+- hosts: k8s
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+    - block:
+        - name: remove node hosts information
+          blockinfile:
+            path: /etc/hosts
+            state: absent
+            marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+          when: item in workers
+          with_items: "{{ nodes|split(',')|unique }}"
+      when: inventory_hostname not in nodes|split(',')|unique
+
+# 集群节点有增减，重新执行安装命令以更新 prometheus 监控主机配置
 - hosts: k8s_master[0]
   any_errors_fatal: true
   gather_facts: false

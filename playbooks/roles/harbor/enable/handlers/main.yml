@@ -1,0 +1,13 @@
+---
+- name: update trusted ca-certificates
+  command: update-ca-trust
+
+- name: restart containerd
+  service:
+    name: containerd
+    state: restarted
+
+- name: restart docker
+  service:
+    name: docker
+    state: restarted

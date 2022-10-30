@@ -9,3 +9,19 @@
     state: started
     enabled: yes
     name: kubernetes.slice
+
+- name: restart and enable containerd
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: containerd
+    state: restarted
+  when: CONTAINER_RUNTIME == "containerd"
+
+- name: restart and enable docker
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: docker
+    state: restarted
+  when: CONTAINER_RUNTIME == "docker"
