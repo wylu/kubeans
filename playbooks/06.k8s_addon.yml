@@ -1,4 +1,24 @@
 ---
+# use an external existing registry server
+- hosts: registry_server
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    # 提前拉取扩展需要的镜像并推送到本地仓库
+    - role: runtime/registry
+      when: ('registry_server' in groups)
+        and (groups.registry_server|length > 0)
+
+# make k8s_master[0] as a registry server
+- hosts: k8s_master[0]
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    # 提前拉取扩展需要的镜像并推送到本地仓库
+    - role: runtime/registry
+      when: ('registry_server' not in groups)
+        or (groups.registry_server|length == 0)
+
 - hosts: k8s_master:ansible_client
   any_errors_fatal: true
   roles:
