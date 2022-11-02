@@ -1,0 +1,7 @@
+---
+- name: remove added authorized_keys
+  blockinfile:
+    path: ~/.ssh/authorized_keys
+    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+  with_items: "{{ groups.k8s_master }}"

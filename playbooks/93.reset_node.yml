@@ -37,4 +37,6 @@
             name: prepare/reboot
           vars:
             REBOOT: "yes"
+        - include_role:
+            name: sshkey/remove
       when: inventory_hostname not in cluster
