@@ -257,10 +257,10 @@ ansible-playbook -i hosts.ini playbooks/02.runtime.yml
 
 ### 添加 worker
 
-**添加新的 worker 节点前，要在 host.ini 文件中添加节点配置到 `[k8s_worker]` 下，然后再执行添加命令。**
+**添加新的 worker 节点前，要在 hosts.ini 文件中添加节点配置到 `[k8s_worker]` 下，然后再执行添加命令。**
 
 ```shell
-ansible-playbook -i host.ini playbooks/91.add_worker.yml -e nodes=worker03 -e ansible_ssh_pass="password"
+ansible-playbook -i hosts.ini playbooks/91.add_worker.yml -e nodes=worker03 -e ansible_ssh_pass="password"
 ```
 
 参数：
@@ -271,7 +271,7 @@ ansible-playbook -i host.ini playbooks/91.add_worker.yml -e nodes=worker03 -e an
 ### 移除 worker
 
 ```shell
-ansible-playbook -i host.ini playbooks/92.remove_worker.yml -e nodes=worker03
+ansible-playbook -i hosts.ini playbooks/92.remove_worker.yml -e nodes=worker03
 ```
 
 参数：
@@ -285,7 +285,7 @@ ansible-playbook -i host.ini playbooks/92.remove_worker.yml -e nodes=worker03
 **注意：重置节点前，需要先将节点从集群中移除。**
 
 ```shell
-ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
+ansible-playbook -i hosts.ini playbooks/93.reset_node.yml -e nodes=worker03
 ```
 
 参数：
@@ -293,6 +293,21 @@ ansible-playbook -i host.ini playbooks/93.reset_node.yml -e nodes=worker03
 - `-e nodes`: 指定要重置的节点，对应清单中的 hostname，支持指定多个节点，指定多个节点时使用英文逗号 `,` 隔开，如：`-e nodes=worker04,worker05`
 
 ## kubernetes 扩展
+
+kubernetes 扩展的主要配置文件为：playbooks/group_vars/all.yaml
+
+你可以在 k8s 集群部署前，修改扩展配置，这样在集群部署时将会根据配置自动安装并启用相应扩展。
+
+你也可以在 k8s 集群部署完成后，再根据需要安装扩展，安装扩展只需要以下两步操作：
+
+- 按照下面相应扩展的说明修改相应的配置
+- 执行以下安装命令使扩展配置生效
+
+  ```shell
+  ansible-playbook -i hosts.ini playbooks/06.k8s_addon.yml
+  ```
+
+**注意：目前仅支持启用扩展，暂不支持禁用扩展。**
 
 ### helm
 
@@ -338,11 +353,11 @@ metrics-server-6bb4988d74-s95c7         4m           21Mi
 ### nfs-provisioner
 
 - 默认不启用 nfs-provisioner 扩展
-- 若要启用 nfs-provisioner 扩展需要设置 `NFS_PROVISIONER_ENABLE: "yes"`，同时还需要设置 host.ini 中的 `NFS_SERVER` 和 `NFS_PATH`
+- 若要启用 nfs-provisioner 扩展需要设置 `NFS_PROVISIONER_ENABLE: "yes"`，同时还需要设置 hosts.ini 中的 `NFS_SERVER` 和 `NFS_PATH`
 
 **启用 nfs-provisioner 扩展至少需要一个 nfs 服务器，用于提供底层存储，其中 `NFS_SERVER` 是 nfs 服务器地址，`NFS_PATH` 是共享目录。**
 
-你可以通过 host.ini 配置文件为某一主机设置 `nfs_server=yes`，这将会在对应主机自动创建一个 nfs 服务器，此时 `NFS_SERVER` 应为该主机地址。
+你可以通过 hosts.ini 配置文件为某一主机设置 `nfs_server=yes`，这将会在对应主机自动创建一个 nfs 服务器，此时 `NFS_SERVER` 应为该主机地址。
 
 或者你也可以根据文档 [nfs-server](https://github.com/easzlab/kubeasz/blob/master/docs/guide/nfs-server.md)，自行创建一个 nfs 服务器。
 
