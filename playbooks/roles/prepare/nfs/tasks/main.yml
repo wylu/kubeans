@@ -27,6 +27,7 @@
   template:
     src: exports.j2
     dest: /etc/exports
+  notify: restart nfs server
 
 - name: install nfs packages
   yum:
